@@ -82,7 +82,7 @@ void ChainParams::loadConfig(
     {
         std::string const comment = "json parsing error detected on line " +
                                     std::to_string(error.line_) + " in column " +
-                                    std::to_string(error.column_) + ": " + error.reason_;
+                                    std::to_string(error.column_) + ": " + error.reason_ + ": " + _json;
         std::cerr << comment << "\n";
         BOOST_THROW_EXCEPTION(SyntaxError() << errinfo_comment(comment));
     }
