@@ -8,8 +8,77 @@ const ContractABI contractPoAABI = strPoAABI;
 FVMPoA::FVMPoA() {
 }
 
-bool FVMPoA::IsUsable(const uint160& address, const COutPoint& utxo, bool& usable, CChainState& chain) const {
+bool FVMPoA::Usable(const uint160& address, const COutPoint& utxo, bool& usable, CChainState& chain) const {
     const static std::string method = "usable";
+    const auto abi = contractPoAABI[method];
+    
+    //  setup input and execute
+    std::vector<std::vector<std::string>> inputValues;
+    {
+        std::vector<std::string> paramAddress;
+        paramAddress.push_back(address.GetHex());
+        inputValues.push_back(paramAddress);
+    }
+
+    {
+        std::vector<std::string> paramUtxo;
+        paramUtxo.push_back(uint256(utxo.n).GetHex());
+        paramUtxo.push_back(utxo.hash.GetHex());
+        inputValues.push_back(paramUtxo);
+    }
+
+    std::vector<ParameterABI::ErrorType> inputErrors;
+    std::string inputData;
+
+    if (!abi.abiIn(inputValues, inputData, inputErrors)) {
+        return error("Fail to constuct input data");
+    }
+
+    std::vector<ResultExecute> execResults;
+    {
+        LOCK(cs_main);
+        execResults = CallContract(MinerListDGP, ParseHex(inputData), chain);
+    }
+    
+    if (execResults.size() < 1) {
+        return error("Failed to CallContract to get poa address status");
+    }
+
+    // Deserialize
+    std::string outputData = HexStr(execResults[0].execRes.output);
+    std::vector<std::vector<std::string>> outputValues;
+    std::vector<ParameterABI::ErrorType> outputErrors;
+    if (!abi.abiOut(outputData, outputValues, outputErrors)) {
+        return error("Failed to deserialize get delegation output parameters");
+    }
+
+    if (outputValues.size() != abi.outputs.size()) {
+        return error("Failed to deserialize get poa output, size doesn't match");
+    }
+
+    try {
+        for (std::size_t i = 0; i < outputValues.size(); i++) {
+            auto const& value = outputValues[i];
+            if (value.size() < 1) {
+                return error("Failed to get poa output value");
+            }
+
+            auto& name = abi.outputs[i].name;
+            if (name == "") {
+                std::cout << "IsUsable value[0] = " << value[0] << std::endl;
+            } else {
+                return error("Invalid get usable status");
+            }
+        }
+    } catch(...) {
+        return error("Invalid get poa usable output");
+    }
+
+    return true;
+}
+
+bool FVMPoA::Enabled(CChainState& chain) const {
+    const static std::string method = "enabled";
     const auto abi = contractPoAABI[method];
     
     //  setup input and execute
@@ -53,7 +122,81 @@ bool FVMPoA::IsUsable(const uint160& address, const COutPoint& utxo, bool& usabl
 
             auto& name = abi.outputs[i].name;
             if (name == "") {
-                std::cout << "value[0] = " << value[0] << std::endl;
+                std::cout << "Enabled value[0] = " << value[0] << std::endl;
+            } else {
+                return error("Invalid get usable status");
+            }
+        }
+    } catch(...) {
+        return error("Invalid get poa usable output");
+    }
+
+    return true;
+}
+
+bool FVMPoA::Update(const uint160& address, const COutPoint& old, const COutPoint& _new,  CChainState& chain) {
+    const static std::string method = "updateWithAddress";
+    const auto abi = contractPoAABI[method];
+    
+    //  setup input and execute
+    std::vector<std::vector<std::string>> inputValues;
+    {
+        std::vector<std::string> paramAddress;
+        paramAddress.push_back(address.GetHex());
+        inputValues.push_back(paramAddress);
+    }
+    {
+        std::vector<std::string> paramUtxo;
+        paramUtxo.push_back(uint256(old.n).GetHex());
+        paramUtxo.push_back(old.hash.GetHex());
+        inputValues.push_back(paramUtxo);
+    }
+    {
+        std::vector<std::string> paramUtxo;
+        paramUtxo.push_back(uint256(_new.n).GetHex());
+        paramUtxo.push_back(_new.hash.GetHex());
+        inputValues.push_back(paramUtxo);
+    }
+
+    std::vector<ParameterABI::ErrorType> inputErrors;
+    std::string inputData;
+
+    if (!abi.abiIn(inputValues, inputData, inputErrors)) {
+        return error("Fail to constuct input data");
+    }
+
+    std::vector<ResultExecute> execResults;
+    {
+        LOCK(cs_main);
+        execResults = ExecContract(MinerListDGP, ParseHex(inputData), chain);
+    }
+    
+    if (execResults.size() < 1) {
+        return error("Failed to ExecContract to update utxo");
+    }
+
+    // Deserialize
+    std::string outputData = HexStr(execResults[0].execRes.output);
+    std::vector<std::vector<std::string>> outputValues;
+    std::vector<ParameterABI::ErrorType> outputErrors;
+    if (!abi.abiOut(outputData, outputValues, outputErrors)) {
+        return error("Failed to deserialize get delegation output parameters");
+    }
+
+    if (outputValues.size() != abi.outputs.size()) {
+        return error("Failed to deserialize get poa output, size doesn't match");
+    }
+
+    try {
+        for (std::size_t i = 0; i < outputValues.size(); i++) {
+            auto const& value = outputValues[i];
+            if (value.size() < 1) {
+                return error("Failed to get poa output value");
+            }
+
+            auto& name = abi.outputs[i].name;
+            if (name == "") {
+                std::cout << "Enabled value[0] = " << value[0] << std::endl;
             } else {
                 return error("Invalid get usable status");
             }

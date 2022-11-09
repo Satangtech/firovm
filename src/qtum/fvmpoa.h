@@ -11,7 +11,11 @@ class FVMPoA {
 public:
     FVMPoA();
 
-    bool IsUsable(const uint160& address, const COutPoint& utxo, bool& usable, CChainState& chain) const;
+    bool Usable(const uint160& address, const COutPoint& utxo, bool& usable, CChainState& chain) const;
+
+    bool Enabled(CChainState& chain) const;
+
+    bool Update(const uint160& address, const COutPoint& old, const COutPoint& _new, CChainState& chain);
 
 private:
 };

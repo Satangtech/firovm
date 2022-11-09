@@ -2196,6 +2196,48 @@ bool CheckSenderScript(const CCoinsViewCache& view, const CTransaction& tx){
     return true;
 }
 
+std::vector<ResultExecute> ExecContract(const dev::Address& addrContract, std::vector<unsigned char> opcode, CChainState& chainstate, const dev::Address& sender, uint64_t gasLimit, CAmount nAmount){
+    CBlock block;
+    CMutableTransaction tx;
+
+    CBlockIndex* pblockindex = chainstate.m_blockman.m_block_index[chainstate.m_chain.Tip()->GetBlockHash()];
+    ReadBlockFromDisk(block, pblockindex, Params().GetConsensus());
+    block.nTime = GetAdjustedTime();
+
+    if(block.IsProofOfStake())
+    	block.vtx.erase(block.vtx.begin()+2,block.vtx.end());
+    else
+    	block.vtx.erase(block.vtx.begin()+1,block.vtx.end());
+
+    QtumDGP qtumDGP(globalState.get(), chainstate, fGettingValuesDGP);
+    uint64_t blockGasLimit = qtumDGP.getBlockGasLimit(chainstate.m_chain.Tip()->nHeight + 1);
+
+    if(gasLimit == 0){
+        gasLimit = blockGasLimit - 1;
+    }
+    dev::Address senderAddress = sender == dev::Address() ? dev::Address("ffffffffffffffffffffffffffffffffffffffff") : sender;
+    tx.vout.push_back(CTxOut(nAmount, CScript() << OP_DUP << OP_HASH160 << senderAddress.asBytes() << OP_EQUALVERIFY << OP_CHECKSIG));
+    block.vtx.push_back(MakeTransactionRef(CTransaction(tx)));
+    dev::u256 nonce = globalState->getNonce(senderAddress);
+ 
+    QtumTransaction callTransaction;
+    if(addrContract == dev::Address())
+    {
+        callTransaction = QtumTransaction(nAmount, 1, dev::u256(gasLimit), opcode, nonce);
+    }
+    else
+    {
+        callTransaction = QtumTransaction(nAmount, 1, dev::u256(gasLimit), addrContract, opcode, nonce);
+    }
+    callTransaction.forceSender(senderAddress);
+    callTransaction.setVersion(VersionVM::GetEVMDefault());
+
+    
+    ByteCodeExec exec(block, std::vector<QtumTransaction>(1, callTransaction), blockGasLimit, pblockindex, chainstate.m_chain);
+    exec.performByteCode(dev::eth::Permanence::Committed);
+    return exec.getResult();
+}
+
 std::vector<ResultExecute> CallContract(const dev::Address& addrContract, std::vector<unsigned char> opcode, CChainState& chainstate, const dev::Address& sender, uint64_t gasLimit, CAmount nAmount){
     CBlock block;
     CMutableTransaction tx;
