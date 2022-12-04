@@ -613,6 +613,7 @@ libbitcoin_common_a_SOURCES = \
   script/signingprovider.cpp \
   script/standard.cpp \
   warnings.cpp \
+  poacontracts.cpp \
   qtum/qtumutils.cpp \
   qtum/qtumDGP.cpp \
   qtum/qtumtoken.cpp \
