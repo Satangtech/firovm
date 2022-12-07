@@ -3,7 +3,9 @@
 
 using namespace dev;
 
-Address const GOVAddress{"0x0000000000000000000000000000000000000880"};
+Address const QtumGovContractAddress{"0x0000000000000000000000000000000000000083"};
+Address const POAGovernanceContractAddress{"0x0000000000000000000000000000000000000880"};
+Address const MobileValidatorContractAddress{"0x0000000000000000000000000000000000000881"};
 
 static h256 keccak1(const h256 &data)
 {
@@ -42,20 +44,25 @@ std::vector<Address> POAContractState::GetArrayAtLocation(const Address &address
 
 std::vector<Address> POAContractState::GetAdminAddresses()
 {
-    return GetArrayAtLocation(GOVAddress, adminAddressesOffset);
+    return GetArrayAtLocation(QtumGovContractAddress, adminAddressesOffset);
 }
 
 std::vector<Address> POAContractState::GetGovernanceAddresses()
 {
-    return GetArrayAtLocation(GOVAddress, governanceAddressesOffset);
+    return GetArrayAtLocation(QtumGovContractAddress, governanceAddressesOffset);
+}
+
+std::vector<Address> POAContractState::GetMinerAddresses()
+{
+    return GetArrayAtLocation(POAGovernanceContractAddress, minerArrayOffset);
 }
 
 bool POAContractState::GetMinerInformation(const Address &minerAddress, u256 &index, std::string &txid)
 {
-    u256 itemOffset = keccak2(h256(minerAddress), u256(minersOffset));
-    index = ethState.storage(GOVAddress, itemOffset);
+    u256 itemOffset = keccak2(h256(minerAddress), u256(minerArrayOffset));
+    index = ethState.storage(POAGovernanceContractAddress, itemOffset);
 
-    u256 txidLength = ethState.storage(GOVAddress, itemOffset+1);
+    u256 txidLength = ethState.storage(QtumGovContractAddress, itemOffset+1);
     if (txidLength & 1) {
         // string is more than 31 characters long, test length for sanity
         if (txidLength >= u256(maxTxidLength*2))
@@ -67,7 +74,7 @@ bool POAContractState::GetMinerInformation(const Address &minerAddress, u256 &in
         u256 p = keccak1(itemOffset+1);
         while (length > 0) {
             uint32_t l = std::min(length, 32u);
-            txid.append((const char *)h256(ethState.storage(GOVAddress, p)).data(), l);
+            txid.append((const char *)h256(ethState.storage(QtumGovContractAddress, p)).data(), l);
             length -= l;
             p++;
         }

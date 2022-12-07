@@ -14,23 +14,24 @@ class POAContractState {
 private:
     const dev::eth::State &ethState;
 
-    static constexpr uint32_t adminAddressesOffset = 0;
-    static constexpr uint32_t governanceAddressesOffset = 1;
-    static constexpr uint32_t minersOffset = 5;
+    // offsets in QtumGov
+    static constexpr uint32_t adminAddressesOffset = 1;
+    static constexpr uint32_t governanceAddressesOffset = 2;
+
+    // offsets in POAGovernance
+    static constexpr uint32_t minersMapOffset = 2;
+    static constexpr uint32_t minerArrayOffset = 5;
 
 public:
     static constexpr uint32_t maxNumberOfAddressesInList = 1<<16;
     static constexpr uint32_t maxTxidLength = 1024;
-
-    /*std::vector<dev::Address> adminAddresses;
-    std::vector<dev::Address> govAddresses;
-    std::map<dev::Address, str::pair<uint256, std::string>> miners;*/
 
     POAContractState(const dev::eth::State &_ethState) : ethState(_ethState) {}
 
     // Get list of addresses
     std::vector<dev::Address> GetAdminAddresses();
     std::vector<dev::Address> GetGovernanceAddresses();
+    std::vector<dev::Address> GetMinerAddresses();
 
     // Get the pair (index and txid) associated with a miner's address. Returns false if not found
     bool GetMinerInformation(const dev::Address &minerAddress, dev::u256 &index, std::string &txid);
