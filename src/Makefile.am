@@ -40,7 +40,7 @@ LIBBITCOIN_SERVER=libbitcoin_server.a
 LIBBITCOIN_COMMON=libbitcoin_common.a
 LIBBITCOIN_CONSENSUS=libbitcoin_consensus.a
 LIBBITCOIN_CLI=libbitcoin_cli.a
-LIBBITCOIN_UTIL=libqtum_util.a
+LIBBITCOIN_UTIL=libfirovm_util.a
 LIBBITCOIN_CRYPTO_BASE=crypto/libbitcoin_crypto_base.a
 LIBBITCOINQT=qt/libbitcoinqt.a
 LIBSECP256K1=secp256k1/libsecp256k1.la
@@ -98,29 +98,29 @@ TESTS =
 BENCHMARKS =
 
 if BUILD_BITCOIND
-  bin_PROGRAMS += qtumd
+  bin_PROGRAMS += firovmd
 endif
 
 if BUILD_BITCOIN_NODE
-  bin_PROGRAMS += qtum-node
+  bin_PROGRAMS += firovm-node
 endif
 
 if BUILD_BITCOIN_CLI
-  bin_PROGRAMS += qtum-cli
+  bin_PROGRAMS += firovm-cli
 endif
 
 if BUILD_BITCOIN_TX
-  bin_PROGRAMS += qtum-tx
+  bin_PROGRAMS += firovm-tx
 endif
 
 if ENABLE_WALLET
 if BUILD_BITCOIN_WALLET
-  bin_PROGRAMS += qtum-wallet
+  bin_PROGRAMS += firovm-wallet
 endif
 endif
 
 if BUILD_BITCOIN_UTIL
-  bin_PROGRAMS += qtum-util
+  bin_PROGRAMS += firovm-util
 endif
 
 .PHONY: FORCE check-symbols check-security
@@ -335,7 +335,7 @@ obj/build.h: FORCE
 	@$(MKDIR_P) $(builddir)/obj
 	@$(top_srcdir)/share/genbuild.sh "$(abs_top_builddir)/src/obj/build.h" \
 	  "$(abs_top_srcdir)"
-libqtum_util_a-clientversion.$(OBJEXT): obj/build.h
+libfirovm_util_a-clientversion.$(OBJEXT): obj/build.h
 
 ipc/capnp/libbitcoin_ipc_a-ipc.$(OBJEXT): $(libbitcoin_ipc_mpgen_input:=.h)
 
@@ -794,9 +794,9 @@ libbitcoin_common_a_SOURCES = \
 # util: shared between all executables.
 # This library *must* be included to make sure that the glibc
 # backward-compatibility objects and their sanity checks are linked.
-libqtum_util_a_CPPFLAGS = $(AM_CPPFLAGS) $(BITCOIN_INCLUDES)
-libqtum_util_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
-libqtum_util_a_SOURCES = \
+libfirovm_util_a_CPPFLAGS = $(AM_CPPFLAGS) $(BITCOIN_INCLUDES)
+libfirovm_util_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
+libfirovm_util_a_SOURCES = \
   support/lockedpool.cpp \
   chainparamsbase.cpp \
   clientversion.cpp \
@@ -839,11 +839,11 @@ libqtum_util_a_SOURCES = \
   $(BITCOIN_CORE_H)
 
 if USE_LIBEVENT
-libqtum_util_a_SOURCES += util/url.cpp
+libfirovm_util_a_SOURCES += util/url.cpp
 endif
 
 if GLIBC_BACK_COMPAT
-libqtum_util_a_SOURCES += compat/glibc_compat.cpp
+libfirovm_util_a_SOURCES += compat/glibc_compat.cpp
 AM_LDFLAGS += $(COMPAT_LDFLAGS)
 endif
 
@@ -856,20 +856,20 @@ libbitcoin_cli_a_SOURCES = \
   rpc/client.cpp \
   $(BITCOIN_CORE_H)
 
-nodist_libqtum_util_a_SOURCES = $(srcdir)/obj/build.h
+nodist_libfirovm_util_a_SOURCES = $(srcdir)/obj/build.h
 #
 
 # bitcoind & bitcoin-node binaries #
-qtum_daemon_sources = bitcoind.cpp
-qtum_bin_cppflags = $(AM_CPPFLAGS) $(BITCOIN_INCLUDES)
-qtum_bin_cxxflags = $(AM_CXXFLAGS) $(PIE_FLAGS)
-qtum_bin_ldflags = $(RELDFLAGS) $(AM_LDFLAGS) $(LIBTOOL_APP_LDFLAGS) $(PTHREAD_FLAGS)
+firovm_daemon_sources = bitcoind.cpp
+firovm_bin_cppflags = $(AM_CPPFLAGS) $(BITCOIN_INCLUDES)
+firovm_bin_cxxflags = $(AM_CXXFLAGS) $(PIE_FLAGS)
+firovm_bin_ldflags = $(RELDFLAGS) $(AM_LDFLAGS) $(LIBTOOL_APP_LDFLAGS) $(PTHREAD_FLAGS)
 
 if TARGET_WINDOWS
-qtum_daemon_sources += bitcoind-res.rc
+firovm_daemon_sources += bitcoind-res.rc
 endif
 
-qtum_bin_ldadd = \
+firovm_bin_ldadd = \
   $(LIBBITCOIN_SERVER) \
   $(LIBBITCOIN_WALLET) \
   $(LIBBITCOIN_SERVER) \
@@ -886,31 +886,31 @@ qtum_bin_ldadd = \
   $(LIBFF) \
   $(LIBSECP256K1)
 
-qtum_bin_ldadd += $(BOOST_LIBS) $(BDB_LIBS) $(SSL_LIBS) $(CRYPTO_LIBS) $(MINIUPNPC_LIBS) $(NATPMP_LIBS) $(EVENT_PTHREADS_LIBS) $(EVENT_LIBS) $(ZMQ_LIBS) $(SQLITE_LIBS) $(GMP_LIBS) $(GMPXX_LIBS)
+firovm_bin_ldadd += $(BOOST_LIBS) $(BDB_LIBS) $(SSL_LIBS) $(CRYPTO_LIBS) $(MINIUPNPC_LIBS) $(NATPMP_LIBS) $(EVENT_PTHREADS_LIBS) $(EVENT_LIBS) $(ZMQ_LIBS) $(SQLITE_LIBS) $(GMP_LIBS) $(GMPXX_LIBS)
 
-qtumd_SOURCES = $(qtum_daemon_sources) init/bitcoind.cpp
-qtumd_CPPFLAGS = $(qtum_bin_cppflags)
-qtumd_CXXFLAGS = $(qtum_bin_cxxflags)
-qtumd_LDFLAGS = $(qtum_bin_ldflags)
-qtumd_LDADD = $(LIBBITCOIN_SERVER) $(qtum_bin_ldadd)
+firovmd_SOURCES = $(firovm_daemon_sources) init/bitcoind.cpp
+firovmd_CPPFLAGS = $(firovm_bin_cppflags)
+firovmd_CXXFLAGS = $(firovm_bin_cxxflags)
+firovmd_LDFLAGS = $(firovm_bin_ldflags)
+firovmd_LDADD = $(LIBBITCOIN_SERVER) $(firovm_bin_ldadd)
 
-qtum_node_SOURCES = $(qtum_daemon_sources) init/bitcoin-node.cpp
-qtum_node_CPPFLAGS = $(qtum_bin_cppflags)
-qtum_node_CXXFLAGS = $(qtum_bin_cxxflags)
-qtum_node_LDFLAGS = $(qtum_bin_ldflags)
-qtum_node_LDADD = $(LIBBITCOIN_SERVER) $(qtum_bin_ldadd) $(LIBBITCOIN_IPC) $(LIBMULTIPROCESS_LIBS)
+firovm_node_SOURCES = $(firovm_daemon_sources) init/bitcoin-node.cpp
+firovm_node_CPPFLAGS = $(firovm_bin_cppflags)
+firovm_node_CXXFLAGS = $(firovm_bin_cxxflags)
+firovm_node_LDFLAGS = $(firovm_bin_ldflags)
+firovm_node_LDADD = $(LIBBITCOIN_SERVER) $(firovm_bin_ldadd) $(LIBBITCOIN_IPC) $(LIBMULTIPROCESS_LIBS)
 
 # bitcoin-cli binary #
-qtum_cli_SOURCES = bitcoin-cli.cpp
-qtum_cli_CPPFLAGS = $(AM_CPPFLAGS) $(BITCOIN_INCLUDES) $(EVENT_CFLAGS)
-qtum_cli_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
-qtum_cli_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(LIBTOOL_APP_LDFLAGS) $(PTHREAD_FLAGS)
+firovm_cli_SOURCES = bitcoin-cli.cpp
+firovm_cli_CPPFLAGS = $(AM_CPPFLAGS) $(BITCOIN_INCLUDES) $(EVENT_CFLAGS)
+firovm_cli_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
+firovm_cli_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(LIBTOOL_APP_LDFLAGS) $(PTHREAD_FLAGS)
 
 if TARGET_WINDOWS
-qtum_cli_SOURCES += bitcoin-cli-res.rc
+firovm_cli_SOURCES += bitcoin-cli-res.rc
 endif
 
-qtum_cli_LDADD = \
+firovm_cli_LDADD = \
   $(LIBBITCOIN_CLI) \
   $(LIBUNIVALUE) \
   $(LIBBITCOIN_UTIL) \
@@ -921,20 +921,20 @@ qtum_cli_LDADD = \
   $(LIBCRYPTOPP) \
   $(LIBSECP256K1)
 
-qtum_cli_LDADD += $(BOOST_LIBS) $(SSL_LIBS) $(CRYPTO_LIBS) $(EVENT_LIBS)
+firovm_cli_LDADD += $(BOOST_LIBS) $(SSL_LIBS) $(CRYPTO_LIBS) $(EVENT_LIBS)
 #
 
 # bitcoin-tx binary #
-qtum_tx_SOURCES = bitcoin-tx.cpp
-qtum_tx_CPPFLAGS = $(AM_CPPFLAGS) $(BITCOIN_INCLUDES)
-qtum_tx_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
-qtum_tx_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(LIBTOOL_APP_LDFLAGS) $(PTHREAD_FLAGS)
+firovm_tx_SOURCES = bitcoin-tx.cpp
+firovm_tx_CPPFLAGS = $(AM_CPPFLAGS) $(BITCOIN_INCLUDES)
+firovm_tx_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
+firovm_tx_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(LIBTOOL_APP_LDFLAGS) $(PTHREAD_FLAGS)
 
 if TARGET_WINDOWS
-qtum_tx_SOURCES += bitcoin-tx-res.rc
+firovm_tx_SOURCES += bitcoin-tx-res.rc
 endif
 
-qtum_tx_LDADD = \
+firovm_tx_LDADD = \
   $(LIBUNIVALUE) \
   $(LIBBITCOIN_COMMON) \
   $(LIBBITCOIN_UTIL) \
@@ -946,32 +946,32 @@ qtum_tx_LDADD = \
   $(LIBCRYPTOPP) \
   $(LIBSECP256K1)
 
-qtum_tx_LDADD += $(BOOST_LIBS) $(CRYPTO_LIBS)
+firovm_tx_LDADD += $(BOOST_LIBS) $(CRYPTO_LIBS)
 #
 
 # bitcoin-wallet binary #
-qtum_wallet_SOURCES = bitcoin-wallet.cpp validation.cpp rpc/server.cpp
-qtum_wallet_CPPFLAGS = $(qtum_bin_cppflags)
-qtum_wallet_CXXFLAGS = $(qtum_bin_cxxflags)
-qtum_wallet_LDFLAGS = $(qtum_bin_ldflags)
-qtum_wallet_LDADD = $(LIBBITCOIN_WALLET_TOOL) $(qtum_bin_ldadd)
+firovm_wallet_SOURCES = bitcoin-wallet.cpp validation.cpp rpc/server.cpp
+firovm_wallet_CPPFLAGS = $(firovm_bin_cppflags)
+firovm_wallet_CXXFLAGS = $(firovm_bin_cxxflags)
+firovm_wallet_LDFLAGS = $(firovm_bin_ldflags)
+firovm_wallet_LDADD = $(LIBBITCOIN_WALLET_TOOL) $(firovm_bin_ldadd)
 
 if TARGET_WINDOWS
-qtum_wallet_SOURCES += bitcoin-wallet-res.rc
+firovm_wallet_SOURCES += bitcoin-wallet-res.rc
 endif
 #
 
 # bitcoin-util binary #
-qtum_util_SOURCES = bitcoin-util.cpp
-qtum_util_CPPFLAGS = $(AM_CPPFLAGS) $(BITCOIN_INCLUDES)
-qtum_util_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
-qtum_util_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(LIBTOOL_APP_LDFLAGS) $(PTHREAD_FLAGS)
+firovm_util_SOURCES = bitcoin-util.cpp
+firovm_util_CPPFLAGS = $(AM_CPPFLAGS) $(BITCOIN_INCLUDES)
+firovm_util_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
+firovm_util_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(LIBTOOL_APP_LDFLAGS) $(PTHREAD_FLAGS)
 
 if TARGET_WINDOWS
-qtum_util_SOURCES += bitcoin-util-res.rc
+firovm_util_SOURCES += bitcoin-util-res.rc
 endif
 
-qtum_util_LDADD = \
+firovm_util_LDADD = \
   $(LIBBITCOIN_COMMON) \
   $(LIBBITCOIN_UTIL) \
   $(LIBUNIVALUE) \
@@ -979,7 +979,7 @@ qtum_util_LDADD = \
   $(LIBBITCOIN_CRYPTO) \
   $(LIBSECP256K1)
 
-qtum_util_LDADD += $(BOOST_LIBS)
+firovm_util_LDADD += $(BOOST_LIBS)
 #
 
 # bitcoinconsensus library #
