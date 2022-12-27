@@ -255,6 +255,7 @@ h256 ChainParams::calculateStateRoot(bool _force) const
         //stateRoot = hash256(toBytesMap(gs));
         dev::eth::commit(genesisState, state);
         stateRoot = state.root();
+        //printf("State root: %s\n", u256(stateRoot).str(0, std::ios_base::hex).c_str());
     }
     return stateRoot;
 }
