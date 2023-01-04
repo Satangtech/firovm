@@ -1,4 +1,4 @@
-packages:=boost openssl libevent gmp
+packages:=boost openssl libevent gmp zlib
 
 qrencode_packages = qrencode
 
