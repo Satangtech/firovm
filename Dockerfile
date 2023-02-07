@@ -34,4 +34,4 @@ COPY --from=builder /usr/lib/x86_64-linux-gnu/libboost_system.so.1.65.1 \
 
 EXPOSE 1234
 
-CMD [ "firovmd" ]
+ENTRYPOINT [ "firovmd" ]
