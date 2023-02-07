@@ -18,7 +18,9 @@ FROM ubuntu:18.04
 
 RUN apt-get update && useradd -ms /bin/bash firovm
 USER firovm
+
 WORKDIR /firovm
+RUN chown -R firovm:firovm /firovm
 
 COPY --from=builder /firovm/src/firovmd /usr/local/bin
 COPY --from=builder /firovm/src/firovm-cli /usr/local/bin
@@ -31,4 +33,4 @@ COPY --from=builder /usr/lib/x86_64-linux-gnu/libboost_system.so.1.65.1 \
 
 EXPOSE 1234
 
-ENTRYPOINT [ "firovmd" ]
+ENTRYPOINT [ "firovmd", "-datadir=/firovm" ]
