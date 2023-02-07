@@ -18,10 +18,10 @@ FROM ubuntu:18.04
 
 RUN apt-get update && useradd -ms /bin/bash firovm
 USER firovm
-WORKDIR /home/firovm
+WORKDIR /firovm
 
-RUN mkdir -p /home/firovm/.firovm/
-RUN chown firovm:firovm /home/firovm/.firovm/
+RUN mkdir -p /firovm/.firovm
+RUN chown firovm:firovm /firovm/.firovm
 
 COPY --from=builder /firovm/src/firovmd /usr/local/bin
 COPY --from=builder /firovm/src/firovm-cli /usr/local/bin
