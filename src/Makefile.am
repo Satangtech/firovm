@@ -339,7 +339,7 @@ BITCOIN_CORE_H = \
   qtum/qtumdelegation.h \
   qtum/qtumtoken.h \
   qtum/qtumledger.h \
-  qtum/fvmpoa.h
+  qtum/fvmpoa.h \
   qtum/delegationutils.h
 
 obj/build.h: FORCE
