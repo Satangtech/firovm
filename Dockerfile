@@ -17,7 +17,6 @@ RUN cd depends && make -j$(nproc) && cd .. && ./autogen.sh && \
 FROM ubuntu:22.04
 
 RUN apt-get update && useradd -ms /bin/bash firovm
-USER firovm
 
 WORKDIR /firovm
 RUN chown -R firovm:firovm /firovm
@@ -30,6 +29,8 @@ COPY --from=builder /usr/lib/x86_64-linux-gnu/libboost_system.so.1.74.0 \
     /usr/lib/x86_64-linux-gnu/libboost_program_options.so.1.74.0 \
     /firovm/db4/lib/libdb_cxx-4.8.a \
     /usr/lib/
+
+USER firovm
 
 EXPOSE 1234
 
