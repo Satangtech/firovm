@@ -29,5 +29,5 @@ define $(package)_stage_cmds
 endef
 
 define $(package)_postprocess_cmds
-  sed -i "s|libstdc++.la|libstdc++.a|" lib/libgmpxx.la
+  sed -i.old "s|libstdc++.la|libstdc++.a|" lib/libgmpxx.la
 endef

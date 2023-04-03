@@ -15,6 +15,7 @@
 #endif
 #include "Exceptions.h"
 #include <boost/filesystem.hpp>
+#include <fstream>
 using namespace std;
 using namespace dev;
 
@@ -71,7 +72,7 @@ inline _T contentsGeneric(boost::filesystem::path const& _file)
 {
     _T ret;
     size_t const c_elementSize = sizeof(typename _T::value_type);
-    boost::filesystem::ifstream is(_file, std::ifstream::binary);
+    std::ifstream is(_file.c_str(), std::ifstream::binary);
     if (!is)
         return ret;
 
@@ -118,7 +119,7 @@ void writeFile(boost::filesystem::path const& _file, bytesConstRef _data, bool _
     {
         createDirectoryIfNotExistent(_file.parent_path());
 
-        boost::filesystem::ofstream s(_file, ios::trunc | ios::binary);
+        std::ofstream s(_file.c_str(), ios::trunc | ios::binary);
         s.write(reinterpret_cast<char const*>(_data.data()), _data.size());
         if (!s)
             BOOST_THROW_EXCEPTION(FileError() << errinfo_comment("Could not write to file: " + _file.string()));

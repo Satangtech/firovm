@@ -65,6 +65,7 @@
 #include <numeric>
 #include <optional>
 #include <string>
+#include <fstream>
 
 #include <boost/algorithm/string/replace.hpp>
 
