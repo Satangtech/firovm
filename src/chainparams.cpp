@@ -47,7 +47,7 @@ static CBlock CreateGenesisBlock(const char* pszTimestamp, const CScript& genesi
     return genesis;
 }
 
-#if 0
+#ifdef MINE_GENESIS
 static void MineGenesis(CBlockHeader& genesisBlock, const uint256& powLimit, bool noProduction)
 {
     if(noProduction)
@@ -118,17 +118,18 @@ public:
         consensus.BIP34Hash = uint256S("0x000075aef83cf2853580f8ae8ce6f8c3096cfa21d98334d6e3f95e5582ed986c");
         consensus.BIP65Height = 0; // 000000000000000004c2b624ed5d7756c508d90fd0da2c7c679febfa6c4735f0
         consensus.BIP66Height = 0; // 00000000000000000379eaa19dce8c9b722d46ae6a57c2f1a988119488b50931
-        consensus.CSVHeight = 6048; // 000000000000000004a1b34462cb8aeebd5799177f7a29cf28f2d1961716b5b5
-        consensus.SegwitHeight = 6048; // 0000000000000000001c8018d9cb3b742ef25114f27563e3fc4a1902167f9893
-        consensus.MinBIP9WarningHeight = 8064; // segwit activation height + miner confirmation window
-        consensus.QIP5Height = 466600;
-        consensus.QIP6Height = 466600;
-        consensus.QIP7Height = 466600;
-        consensus.QIP9Height = 466600;
-        consensus.nOfflineStakeHeight = 680000;
-        consensus.nReduceBlocktimeHeight = 845000;
-        consensus.nMuirGlacierHeight = 845000;
-        consensus.nLondonHeight = 2080512;
+        consensus.CSVHeight = 1; // 000000000000000004a1b34462cb8aeebd5799177f7a29cf28f2d1961716b5b5
+        consensus.SegwitHeight = 1; // 0000000000000000001c8018d9cb3b742ef25114f27563e3fc4a1902167f9893
+        consensus.MinBIP9WarningHeight = 1; // segwit activation height + miner confirmation window
+        consensus.QIP5Height = 1;
+        consensus.QIP6Height = 1;
+        consensus.QIP7Height = 1;
+        consensus.QIP9Height = 1;
+        consensus.nOfflineStakeHeight = 1;
+        consensus.nSupplyControlHeight = 1;
+        consensus.nReduceBlocktimeHeight = 1;
+        consensus.nMuirGlacierHeight = 1;
+        consensus.nLondonHeight = 1;
         consensus.powLimit = uint256S("0000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
         consensus.posLimit = uint256S("00000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
         consensus.QIP9PosLimit = uint256S("0000000000001fffffffffffffffffffffffffffffffffffffffffffffffffff"); // The new POS-limit activated after QIP9
@@ -173,10 +174,15 @@ public:
         m_assumed_blockchain_size = 18;
         m_assumed_chain_state_size = 1;
 
-        genesis = CreateGenesisBlock(1504695029, 326737, 0x1f00ffff, 1, 50 * COIN);
+        genesis = CreateGenesisBlock(1504695029, 566512, 0x1f00ffff, 1, 50 * COIN);
         consensus.hashGenesisBlock = genesis.GetHash();
-        //assert(consensus.hashGenesisBlock == uint256S("0x0000b8c1261a3c63b5b6f65b87f735c5cdf65c895e805d18955271d2073ad539"));
-        //assert(genesis.hashMerkleRoot == uint256S("0xed34050eb5909ee535fcb07af292ea55f3d2f291187617b44d3282231405b96d"));
+
+#ifdef MINE_GENESIS
+        MineGenesis(genesis, consensus.powLimit, false);
+#endif
+
+        assert(consensus.hashGenesisBlock == uint256S("0x0000715af57abf97f090cbfa53090a24b10a4cdecfc1de9bde08992a78e69104"));
+        assert(genesis.hashMerkleRoot == uint256S("0xed34050eb5909ee535fcb07af292ea55f3d2f291187617b44d3282231405b96d"));
 
         // Note that of those which support the service bits prefix, most only support a subset of
         // possible options.
@@ -212,7 +218,7 @@ public:
 
         checkpointData = {
             {
-                { 0, uint256S("0x0000b8c1261a3c63b5b6f65b87f735c5cdf65c895e805d18955271d2073ad539")},
+                { 0, uint256S("0x0000715af57abf97f090cbfa53090a24b10a4cdecfc1de9bde08992a78e69104")},
             }
         };
 
@@ -247,6 +253,7 @@ public:
         consensus.nCheckpointSpan = consensus.nCoinbaseMaturity;
         consensus.nRBTCheckpointSpan = consensus.nRBTCoinbaseMaturity;
         consensus.delegationsAddress = uint160(ParseHex("0000000000000000000000000000000000000086")); // Delegations contract for offline staking
+        consensus.supplyControlAddress = uint160(ParseHex("0000000000000000000000000000000000000882"));
         consensus.nStakeTimestampMask = 15;
         consensus.nRBTStakeTimestampMask = 3;
     }
@@ -275,6 +282,7 @@ public:
         consensus.QIP7Height = 0;
         consensus.QIP9Height = 0;
         consensus.nOfflineStakeHeight = 0;
+        consensus.nSupplyControlHeight = 10;
         consensus.nReduceBlocktimeHeight = 0;
         consensus.nMuirGlacierHeight = 0;
         consensus.nLondonHeight = 0;
@@ -319,21 +327,25 @@ public:
 
         genesis = CreateGenesisBlock(1504695029, 566512, 0x1f00ffff, 1, 50 * COIN);
         consensus.hashGenesisBlock = genesis.GetHash();
+#ifdef MINE_GENESIS
+        MineGenesis(genesis, consensus.powLimit, false);
+#endif
+
         assert(consensus.hashGenesisBlock == uint256S("0x0000715af57abf97f090cbfa53090a24b10a4cdecfc1de9bde08992a78e69104"));
         assert(genesis.hashMerkleRoot == uint256S("0xed34050eb5909ee535fcb07af292ea55f3d2f291187617b44d3282231405b96d"));
 
         vFixedSeeds.clear();
         vSeeds.clear();
         // nodes with support for servicebits filtering should be at the top
-        vSeeds.emplace_back("amsterdam.test.fvm.firo.org");
-        vSeeds.emplace_back("australia.test.fvm.firo.org");
-        vSeeds.emplace_back("chicago.test.fvm.firo.org");
-        vSeeds.emplace_back("london.test.fvm.firo.org");
-        vSeeds.emplace_back("frankfurt.test.fvm.firo.org");
-        vSeeds.emplace_back("newjersey.test.fvm.firo.org");
-        vSeeds.emplace_back("sanfrancisco.test.fvm.firo.org");
-        vSeeds.emplace_back("tokyo.test.fvm.firo.org");
-        vSeeds.emplace_back("singapore.test.fvm.firo.org");
+        // vSeeds.emplace_back("amsterdam.test.fvm.firo.org");
+        // vSeeds.emplace_back("australia.test.fvm.firo.org");
+        // vSeeds.emplace_back("chicago.test.fvm.firo.org");
+        // vSeeds.emplace_back("london.test.fvm.firo.org");
+        // vSeeds.emplace_back("frankfurt.test.fvm.firo.org");
+        // vSeeds.emplace_back("newjersey.test.fvm.firo.org");
+        // vSeeds.emplace_back("sanfrancisco.test.fvm.firo.org");
+        // vSeeds.emplace_back("tokyo.test.fvm.firo.org");
+        // vSeeds.emplace_back("singapore.test.fvm.firo.org");
 
         base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1,65);
         base58Prefixes[SCRIPT_ADDRESS] = std::vector<unsigned char>(1,178);
@@ -387,6 +399,7 @@ public:
         consensus.nCheckpointSpan = consensus.nCoinbaseMaturity;
         consensus.nRBTCheckpointSpan = consensus.nRBTCoinbaseMaturity;
         consensus.delegationsAddress = uint160(ParseHex("0000000000000000000000000000000000000086")); // Delegations contract for offline staking
+        consensus.supplyControlAddress = uint160(ParseHex("0000000000000000000000000000000000000882"));
         consensus.nStakeTimestampMask = 15;
         consensus.nRBTStakeTimestampMask = 3;
     }
@@ -453,6 +466,7 @@ public:
         consensus.QIP7Height = 0;
         consensus.QIP9Height = 0;
         consensus.nOfflineStakeHeight = 1;
+        consensus.nSupplyControlHeight = 1;
         consensus.nReduceBlocktimeHeight = 0;
         consensus.nMuirGlacierHeight = 0;
         consensus.nLondonHeight = 0;
@@ -491,10 +505,13 @@ public:
         nDefaultPort = 33888;
         nPruneAfterHeight = 1000;
 
-        genesis = CreateGenesisBlock(1623662135, 572184, 0x1f00ffff, 1, 50 * COIN);
+        genesis = CreateGenesisBlock(1623662135, 644193, 0x1f00ffff, 1, 50 * COIN);
         consensus.hashGenesisBlock = genesis.GetHash();
-        //assert(consensus.hashGenesisBlock == uint256S("0x0000e3969af231f6d87776e6fb22efb4fa51d0bc2e6fb3438dabae883260afde"));
-        //assert(genesis.hashMerkleRoot == uint256S("0xed34050eb5909ee535fcb07af292ea55f3d2f291187617b44d3282231405b96d"));
+#ifdef MINE_GENESIS
+        MineGenesis(genesis, consensus.powLimit, false);
+#endif
+        assert(consensus.hashGenesisBlock == uint256S("0x0000107223abedccb61087e46d44eaa2fcd3274cb8ff10cf4cfbfda9fa54d643"));
+        assert(genesis.hashMerkleRoot == uint256S("0xed34050eb5909ee535fcb07af292ea55f3d2f291187617b44d3282231405b96d"));
 
         vFixedSeeds.clear();
 
@@ -528,6 +545,7 @@ public:
         consensus.nCheckpointSpan = consensus.nCoinbaseMaturity;
         consensus.nRBTCheckpointSpan = consensus.nRBTCoinbaseMaturity;
         consensus.delegationsAddress = uint160(ParseHex("0000000000000000000000000000000000000086")); // Delegations contract for offline staking
+        consensus.supplyControlAddress = uint160(ParseHex("0000000000000000000000000000000000000882"));
         consensus.nStakeTimestampMask = 15;
         consensus.nRBTStakeTimestampMask = 3;
     }
@@ -557,6 +575,7 @@ public:
         consensus.QIP7Height = 0;
         consensus.QIP9Height = 0;
         consensus.nOfflineStakeHeight = 1;
+        consensus.nSupplyControlHeight = 1;
         consensus.nReduceBlocktimeHeight = 0;
         consensus.nMuirGlacierHeight = 0;
         consensus.nLondonHeight = 0;
@@ -601,8 +620,9 @@ public:
 
         genesis = CreateGenesisBlock(1504695029, 500000, 0x207fffff, 1, 50 * COIN);
         consensus.hashGenesisBlock = genesis.GetHash();
-        //assert(consensus.hashGenesisBlock == uint256S("0x4d5165390707161590c19a07bc5fbeb6eaa6cd9a461e7c4c882249b13ff1196e"));
-        //assert(genesis.hashMerkleRoot == uint256S("0xed34050eb5909ee535fcb07af292ea55f3d2f291187617b44d3282231405b96d"));
+
+        assert(consensus.hashGenesisBlock == uint256S("0x3da7bea7fa8e410b019f7bafb19e03e0cc14433e04ef0df364e68bbb4ac2a620"));
+        assert(genesis.hashMerkleRoot == uint256S("0xed34050eb5909ee535fcb07af292ea55f3d2f291187617b44d3282231405b96d"));
 
         vFixedSeeds.clear(); //!< Regtest mode doesn't have any fixed seeds.
         vSeeds.clear();
@@ -617,7 +637,7 @@ public:
 
         checkpointData = {
             {
-                {0, uint256S("5a167e82f196f50234bc6ff7a67dc8a03fcdb52695f07ec4cdc3e5127e56683d")},
+                {0, uint256S("0x3da7bea7fa8e410b019f7bafb19e03e0cc14433e04ef0df364e68bbb4ac2a620")},
             }
         };
 
@@ -648,6 +668,7 @@ public:
         consensus.nCheckpointSpan = consensus.nCoinbaseMaturity;
         consensus.nRBTCheckpointSpan = consensus.nRBTCoinbaseMaturity;
         consensus.delegationsAddress = uint160(ParseHex("0000000000000000000000000000000000000086")); // Delegations contract for offline staking
+        consensus.supplyControlAddress = uint160(ParseHex("0000000000000000000000000000000000000882"));
         consensus.nStakeTimestampMask = 15;
         consensus.nRBTStakeTimestampMask = 3;
 
@@ -907,6 +928,16 @@ void UpdateOfflineStakingBlockHeight(int nHeight)
     const_cast<CChainParams*>(globalChainParams.get())->UpdateOfflineStakingBlockHeight(nHeight);
 }
 
+void CChainParams::UpdateSupplyControlBlockHeight(int nHeight)
+{
+    consensus.nSupplyControlHeight = nHeight;
+}
+
+void UpdateSupplyControlBlockHeight(int nHeight)
+{
+    const_cast<CChainParams*>(globalChainParams.get())->UpdateSupplyControlBlockHeight(nHeight);
+}
+
 void CChainParams::UpdateDelegationsAddress(const uint160& address)
 {
     consensus.delegationsAddress = address;
@@ -915,6 +946,16 @@ void CChainParams::UpdateDelegationsAddress(const uint160& address)
 void UpdateDelegationsAddress(const uint160& address)
 {
     const_cast<CChainParams*>(globalChainParams.get())->UpdateDelegationsAddress(address);
+}
+
+void CChainParams::UpdateSupplyControlAddress(const uint160& address)
+{
+    consensus.supplyControlAddress = address;
+}
+
+void UpdateSupplyControlAddress(const uint160& address)
+{
+    const_cast<CChainParams*>(globalChainParams.get())->UpdateSupplyControlAddress(address);
 }
 
 void CChainParams::UpdateLastMPoSBlockHeight(int nHeight)

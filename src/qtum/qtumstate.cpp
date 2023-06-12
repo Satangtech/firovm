@@ -413,3 +413,16 @@ bool CondensingTX::checkDeleteAddress(dev::Address addr){
     return deleteAddresses.count(addr) != 0;
 }
 ///////////////////////////////////////////////////////////////////////////////////////////
+
+///////////////////////////////////////////////////////////////////////////////////////////
+// FiroVM
+void QtumState::deploySupplyControl () {
+    dev::Address supplyControlAddress = uintToh160(Params().GetConsensus().supplyControlAddress);
+    if(!QtumState::addressInUse(supplyControlAddress)){
+        QtumState::createContract(supplyControlAddress);
+        QtumState::setCode(supplyControlAddress, bytes{fromHex(SUPPLY_CONTROL_CONTRACT_CODE)}, QtumState::version(supplyControlAddress));
+        commit(CommitBehaviour::RemoveEmptyAccounts);
+        db().commit();
+    }
+}
+///////////////////////////////////////////////////////////////////////////////////////////

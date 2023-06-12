@@ -99,6 +99,8 @@ struct Params {
     int QIP9Height;
     /** Block height at which Offline Staking becomes active */
     int nOfflineStakeHeight;
+    /** Block height at which supply control active */
+    int nSupplyControlHeight;
     /** Block height at which Reduce Block Time becomes active */
     int nReduceBlocktimeHeight;
     /** Block height at which EVM Muir Glacier fork becomes active */
@@ -170,6 +172,7 @@ struct Params {
     int nCheckpointSpan;
     int nRBTCheckpointSpan;
     uint160 delegationsAddress;
+    uint160 supplyControlAddress;
     int nLastMPoSBlock;
     int nLastBigReward;
     uint32_t nStakeTimestampMask;

@@ -10,6 +10,13 @@ src/bitcoin-node
 src/bitcoin-tx
 src/bitcoin-util
 src/bitcoin-wallet
+src/firovmd
+src/firovm-cli
+src/firovm-gui
+src/firovm-node
+src/firovm-tx
+src/firovm-util
+src/firovm-wallet
 src/test/fuzz/fuzz
 src/test/test_bitcoin
 src/qt/test/test_bitcoin-qt
@@ -169,3 +176,6 @@ src/test/test_qtum_fuzzy
 Debug
 src/secp256k1/gen_context
 src/secp256k1/src/ecmult_static_context.h
+
+# Vscode
+.vscode/

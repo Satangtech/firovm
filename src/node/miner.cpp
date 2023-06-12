@@ -18,6 +18,7 @@
 #include <policy/policy.h>
 #include <pow.h>
 #include <pos.h>
+#include <supplycontrol.h>
 #include <primitives/transaction.h>
 #include <timedata.h>
 #include <util/moneystr.h>
@@ -249,6 +250,8 @@ std::unique_ptr<CBlockTemplate> BlockAssembler::CreateNewBlock(const CScript& sc
     {
         coinbaseTx.vout[0].scriptPubKey = scriptPubKeyIn;
         coinbaseTx.vout[0].nValue = nFees + GetBlockSubsidy(nHeight, chainparams.GetConsensus());
+        if (nHeight > chainparams.GetConsensus().nSupplyControlHeight)
+            AddSupplyControlOutputs(nHeight, coinbaseTx, m_chainstate, fProofOfStake);
     }
     coinbaseTx.vin[0].scriptSig = CScript() << nHeight << OP_0;
     originalRewardTx = coinbaseTx;
@@ -291,6 +294,11 @@ std::unique_ptr<CBlockTemplate> BlockAssembler::CreateNewBlock(const CScript& sc
     ////////////////////////////////////////////////// deploy offline staking contract
     if(nHeight == chainparams.GetConsensus().nOfflineStakeHeight){
         globalState->deployDelegationsContract();
+    }
+    /////////////////////////////////////////////////
+    ////////////////////////////////////////////////// deploy supply control contract
+    if(nHeight == chainparams.GetConsensus().nSupplyControlHeight){
+        globalState->deploySupplyControl();
     }
     /////////////////////////////////////////////////
     int nPackagesSelected = 0;
@@ -396,6 +404,8 @@ std::unique_ptr<CBlockTemplate> BlockAssembler::CreateEmptyBlock(const CScript& 
     {
         coinbaseTx.vout[0].scriptPubKey = scriptPubKeyIn;
         coinbaseTx.vout[0].nValue = nFees + GetBlockSubsidy(nHeight, chainparams.GetConsensus());
+        if (nHeight > chainparams.GetConsensus().nSupplyControlHeight)
+            AddSupplyControlOutputs(nHeight, coinbaseTx, m_chainstate, fProofOfStake);
     }
     coinbaseTx.vin[0].scriptSig = CScript() << nHeight << OP_0;
     originalRewardTx = coinbaseTx;

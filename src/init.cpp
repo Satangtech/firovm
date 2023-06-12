@@ -584,6 +584,7 @@ void SetupServerArgs(ArgsManager& argsman)
     argsman.AddArg("-difficultychangeheight=<n>", "Use given block height to check difficulty change fork (regtest-only)", ArgsManager::ALLOW_ANY, OptionsCategory::DEBUG_TEST);
     argsman.AddArg("-offlinestakingheight=<n>", "Use given block height to check offline staking fork (regtest-only)", ArgsManager::ALLOW_ANY, OptionsCategory::DEBUG_TEST);
     argsman.AddArg("-delegationsaddress=<adr>", "Use given contract delegations address for offline staking fork (regtest-only)", ArgsManager::ALLOW_ANY, OptionsCategory::DEBUG_TEST);
+    argsman.AddArg("-supplycontroladdress=<adr>", "Use given contract supply control address (regtest-only)", ArgsManager::ALLOW_ANY, OptionsCategory::DEBUG_TEST);
     argsman.AddArg("-lastmposheight=<n>", "Use given block height to check remove mpos fork (regtest-only)", ArgsManager::ALLOW_ANY, OptionsCategory::DEBUG_TEST);
     argsman.AddArg("-reduceblocktimeheight=<n>", "Use given block height to check blocks with reduced target spacing (regtest-only)", ArgsManager::ALLOW_ANY, OptionsCategory::DEBUG_TEST);
     argsman.AddArg("-powallowmindifficultyblocks", "Use given value for pow allow min difficulty blocks parameter (regtest-only, default: 1)", ArgsManager::ALLOW_ANY, OptionsCategory::DEBUG_TEST);
@@ -1229,6 +1230,20 @@ bool AppInitParameterInteraction(const ArgsManager& args)
         {
             UpdateDelegationsAddress(uint160(ParseHex(delegationsAddress)));
             LogPrintf("Activate delegations address %s\n.", delegationsAddress);
+        }
+    }
+    
+    if (args.IsArgSet("-supplycontroladdress")) {
+        // Allow overriding supply control address for testing
+        if (!chainparams.MineBlocksOnDemand()) {
+            return InitError(Untranslated("delegations address may only be overridden on regtest."));
+        }
+
+        std::string supplycontroladdress = args.GetArg("-supplycontroladdress", std::string());
+        if(IsHex(supplycontroladdress))
+        {
+            UpdateSupplyControlAddress(uint160(ParseHex(supplycontroladdress)));
+            LogPrintf("Activate supply control address %s\n.", supplycontroladdress);
         }
     }
 

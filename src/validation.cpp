@@ -40,6 +40,7 @@
 #include <script/sigcache.h>
 #include <shutdown.h>
 #include <signet.h>
+#include <supplycontrol.h>
 #include <timedata.h>
 #include <tinyformat.h>
 #include <txdb.h>
@@ -2483,8 +2484,27 @@ bool CheckMinGasPrice(std::vector<EthTransactionParams>& etps, const uint64_t& m
     return true;
 }
 
-bool CheckReward(const CBlock& block, BlockValidationState& state, int nHeight, const Consensus::Params& consensusParams, CAmount nFees, CAmount gasRefunds, CAmount nActualStakeReward, const std::vector<CTxOut>& vouts, CAmount nValueCoinPrev, bool delegateOutputExist, CChain& chain, node::BlockManager& blockman)
+bool CheckReward(
+    const CBlock& block, 
+    BlockValidationState& state, 
+    int nHeight, 
+    const Consensus::Params& consensusParams, 
+    CAmount nFees, 
+    CAmount gasRefunds, 
+    CAmount nActualStakeReward, 
+    const std::vector<CTxOut> mints, 
+    const std::vector<CTxOut>& vouts, 
+    CAmount nValueCoinPrev, 
+    bool delegateOutputExist, 
+    CChain& chain, 
+    node::BlockManager& blockman)
 {
+    CAmount supplyMinted(0);
+    for (auto const &m: mints) {
+        supplyMinted += m.nValue;
+    }
+
+    // Check gas refund
     size_t offset = block.IsProofOfStake() ? 1 : 0;
     std::vector<CTxOut> vTempVouts=block.vtx[offset]->vout;
     std::vector<CTxOut>::iterator it;
@@ -2497,11 +2517,23 @@ bool CheckReward(const CBlock& block, BlockValidationState& state, int nHeight, 
         }
     }
 
+    // Check mints
+    vTempVouts = block.vtx[offset]->vout;
+    for (auto const &m: mints) {
+        auto it = std::find(vTempVouts.begin(), vTempVouts.end(), m);
+        if (it == vTempVouts.end()) {
+            return state.Invalid(BlockValidationResult::BLOCK_CONSENSUS, "bad-mint-missing", "CheckReward(): Mints missing");
+        } else {
+            vTempVouts.erase(it);
+        }
+    }
+    
+
     // Check block reward
     if (block.IsProofOfWork())
     {
         // Check proof-of-work reward
-        CAmount blockReward = nFees + GetBlockSubsidy(nHeight, consensusParams);
+        CAmount blockReward = nFees + GetBlockSubsidy(nHeight, consensusParams) + supplyMinted;
         if (block.vtx[offset]->GetValueOut() > blockReward) {
             LogPrintf("ERROR: ConnectBlock(): coinbase pays too much (actual=%d vs limit=%d)\n", block.vtx[offset]->GetValueOut(), blockReward);
             return state.Invalid(BlockValidationResult::BLOCK_CONSENSUS, "bad-cb-amount");
@@ -2510,7 +2542,7 @@ bool CheckReward(const CBlock& block, BlockValidationState& state, int nHeight, 
     else
     {
         // Check full reward
-        CAmount blockReward = nFees + GetBlockSubsidy(nHeight, consensusParams);
+        CAmount blockReward = nFees + GetBlockSubsidy(nHeight, consensusParams) + supplyMinted;
         if (nActualStakeReward > blockReward)
             return state.Invalid(BlockValidationResult::BLOCK_CONSENSUS, "bad-cs-amount", strprintf("CheckReward(): coinstake pays too much (actual=%d vs limit=%d)", nActualStakeReward, blockReward));
 
@@ -3518,10 +3550,15 @@ bool CChainState::ConnectBlock(const CBlock& block, BlockValidationState& state,
     int64_t nTime3 = GetTimeMicros(); nTimeConnect += nTime3 - nTime2;
     LogPrint(BCLog::BENCH, "      - Connect %u transactions: %.2fms (%.3fms/tx, %.3fms/txin) [%.2fs (%.2fms/blk)]\n", (unsigned)block.vtx.size(), MILLI * (nTime3 - nTime2), MILLI * (nTime3 - nTime2) / block.vtx.size(), nInputs <= 1 ? 0 : MILLI * (nTime3 - nTime2) / (nInputs-1), nTimeConnect * MICRO, nTimeConnect * MILLI / nBlocksTotal);
 
+    std::vector<CTxOut> mints;
+    if (pindex->nHeight > m_params.GetConsensus().nSupplyControlHeight) {
+        GetSupplyControlOutputs(pindex->nHeight, mints, *this);
+    }
+
     if(nFees < gasRefunds) { //make sure it won't overflow
         return state.Invalid(BlockValidationResult::BLOCK_CONSENSUS, "bad-blk-fees-greater-gasrefund", "ConnectBlock(): Less total fees than gas refund fees");
     }
-    if(!CheckReward(block, state, pindex->nHeight, m_params.GetConsensus(), nFees, gasRefunds, nActualStakeReward, checkVouts, nValueCoinPrev, delegateOutputExist, m_chain, m_blockman))
+    if(!CheckReward(block, state, pindex->nHeight, m_params.GetConsensus(), nFees, gasRefunds, nActualStakeReward, mints, checkVouts, nValueCoinPrev, delegateOutputExist, m_chain, m_blockman))
         return state.Invalid(BlockValidationResult::BLOCK_CONSENSUS, "block-reward-invalid", "ConnectBlock(): Reward check failed");
 
     if (!control.Wait()) {
@@ -3530,6 +3567,12 @@ bool CChainState::ConnectBlock(const CBlock& block, BlockValidationState& state,
     }
     int64_t nTime4 = GetTimeMicros(); nTimeVerify += nTime4 - nTime2;
     LogPrint(BCLog::BENCH, "    - Verify %u txins: %.2fms (%.3fms/txin) [%.2fs (%.2fms/blk)]\n", nInputs - 1, MILLI * (nTime4 - nTime2), nInputs <= 1 ? 0 : MILLI * (nTime4 - nTime2) / (nInputs-1), nTimeVerify * MICRO, nTimeVerify * MILLI / nBlocksTotal);
+
+////////////////////////////////////////////////////////////////// // firovm
+    if(pindex->nHeight == m_params.GetConsensus().nSupplyControlHeight){
+        globalState->deploySupplyControl();
+    }
+//////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////// // qtum
     if(pindex->nHeight == m_params.GetConsensus().nOfflineStakeHeight){
