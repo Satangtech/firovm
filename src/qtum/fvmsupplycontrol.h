@@ -4,7 +4,8 @@
 #include <validation.h>
 #include <util/contractabi.h>
 
-extern const std::string strSupplyControlABI;
+extern const std::string supplyControlABI;
+extern const std::string supplyControlCode;
 
 struct Mint {
     std::string scriptType;

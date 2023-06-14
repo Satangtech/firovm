@@ -6,6 +6,7 @@
 #include <qtum/qtumstate.h>
 #include <libevm/VMFace.h>
 #include <validation.h>
+#include <qtum/fvmsupplycontrol.h>
 
 using namespace std;
 using namespace dev;
@@ -420,7 +421,7 @@ void QtumState::deploySupplyControl () {
     dev::Address supplyControlAddress = uintToh160(Params().GetConsensus().supplyControlAddress);
     if(!QtumState::addressInUse(supplyControlAddress)){
         QtumState::createContract(supplyControlAddress);
-        QtumState::setCode(supplyControlAddress, bytes{fromHex(SUPPLY_CONTROL_CONTRACT_CODE)}, QtumState::version(supplyControlAddress));
+        QtumState::setCode(supplyControlAddress, bytes{fromHex(supplyControlCode)}, QtumState::version(supplyControlAddress));
         commit(CommitBehaviour::RemoveEmptyAccounts);
         db().commit();
     }
