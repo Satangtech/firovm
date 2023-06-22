@@ -111,6 +111,7 @@ public:
     CMainParams() {
         strNetworkID = CBaseChainParams::MAIN;
         consensus.signet_blocks = false;
+        consensus.addressBlockRewards = "TXGL18nceqWF5ZcXgr7wAjZGsMLWpoobfj";
         consensus.signet_challenge.clear();
         consensus.nSubsidyHalvingInterval = 985500; // qtum halving every 4 years
         consensus.BIP16Exception = uint256S("0x000075aef83cf2853580f8ae8ce6f8c3096cfa21d98334d6e3f95e5582ed986c");
@@ -242,8 +243,8 @@ public:
         consensus.nLastPOWBlock = 5000;
         consensus.nLastBigReward = 5000;
         consensus.nMPoSRewardRecipients = 10;
-        consensus.nFirstMPoSBlock = consensus.nLastPOWBlock + 
-                                    consensus.nMPoSRewardRecipients + 
+        consensus.nFirstMPoSBlock = consensus.nLastPOWBlock +
+                                    consensus.nMPoSRewardRecipients +
                                     consensus.nCoinbaseMaturity;
         consensus.nLastMPoSBlock = 679999;
 
@@ -267,6 +268,7 @@ public:
     CTestNetParams() {
         strNetworkID = CBaseChainParams::TESTNET;
         consensus.signet_blocks = false;
+        consensus.addressBlockRewards = "TXGL18nceqWF5ZcXgr7wAjZGsMLWpoobfj";
         consensus.signet_challenge.clear();
         consensus.nSubsidyHalvingInterval = 985500; // qtum halving every 4 years
         consensus.BIP16Exception = uint256S("0x0000e803ee215c0684ca0d2f9220594d3f828617972aad66feb2ba51f5e14222");
@@ -389,8 +391,8 @@ public:
         consensus.nLastPOWBlock = 4000;
         consensus.nLastBigReward = 4000;
         consensus.nMPoSRewardRecipients = 10;
-        consensus.nFirstMPoSBlock = consensus.nLastPOWBlock + 
-                                    consensus.nMPoSRewardRecipients + 
+        consensus.nFirstMPoSBlock = consensus.nLastPOWBlock +
+                                    consensus.nMPoSRewardRecipients +
                                     consensus.nCoinbaseMaturity;
         consensus.nLastMPoSBlock = 624999;
 
@@ -452,6 +454,7 @@ public:
 
         strNetworkID = CBaseChainParams::SIGNET;
         consensus.signet_blocks = true;
+        consensus.addressBlockRewards = "TXGL18nceqWF5ZcXgr7wAjZGsMLWpoobfj";
         consensus.signet_challenge.assign(bin.begin(), bin.end());
         consensus.nSubsidyHalvingInterval = 985500;
         consensus.BIP16Exception = uint256{};
@@ -560,6 +563,7 @@ public:
     explicit CRegTestParams(const ArgsManager& args) {
         strNetworkID =  CBaseChainParams::REGTEST;
         consensus.signet_blocks = false;
+        consensus.addressBlockRewards = "TXGL18nceqWF5ZcXgr7wAjZGsMLWpoobfj";
         consensus.signet_challenge.clear();
         consensus.nSubsidyHalvingInterval = 985500;
         consensus.BIP16Exception = uint256();
@@ -907,8 +911,8 @@ void CChainParams::UpdateDifficultyChangeBlockHeight(int nHeight)
     consensus.fPoSNoRetargeting = false;
     consensus.nLastPOWBlock = 5000;
     consensus.nMPoSRewardRecipients = 10;
-    consensus.nFirstMPoSBlock = consensus.nLastPOWBlock + 
-                                consensus.nMPoSRewardRecipients + 
+    consensus.nFirstMPoSBlock = consensus.nLastPOWBlock +
+                                consensus.nMPoSRewardRecipients +
                                 consensus.nCoinbaseMaturity;
     consensus.nLastMPoSBlock = 0;
 }

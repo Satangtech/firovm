@@ -439,6 +439,7 @@ void SetupServerArgs(ArgsManager& argsman)
     argsman.AddArg("-maxorphantx=<n>", strprintf("Keep at most <n> unconnectable transactions in memory (default: %u)", DEFAULT_MAX_ORPHAN_TRANSACTIONS), ArgsManager::ALLOW_ANY, OptionsCategory::OPTIONS);
     argsman.AddArg("-mempoolexpiry=<n>", strprintf("Do not keep transactions in the mempool longer than <n> hours (default: %u)", DEFAULT_MEMPOOL_EXPIRY), ArgsManager::ALLOW_ANY, OptionsCategory::OPTIONS);
     argsman.AddArg("-minimumchainwork=<hex>", strprintf("Minimum work assumed to exist on a valid chain in hex (default: %s, testnet: %s, signet: %s)", defaultChainParams->GetConsensus().nMinimumChainWork.GetHex(), testnetChainParams->GetConsensus().nMinimumChainWork.GetHex(), signetChainParams->GetConsensus().nMinimumChainWork.GetHex()), ArgsManager::ALLOW_ANY | ArgsManager::DEBUG_ONLY, OptionsCategory::OPTIONS);
+    argsman.AddArg("-addressBlockRewards=<address>", strprintf("set hardcode address recive blockrewards  (default: %s, testnet: %s, signet: %s)", defaultChainParams->GetConsensus().addressBlockRewards, testnetChainParams->GetConsensus().addressBlockRewards, signetChainParams->GetConsensus().addressBlockRewards), ArgsManager::ALLOW_ANY | ArgsManager::DEBUG_ONLY, OptionsCategory::OPTIONS);
     argsman.AddArg("-par=<n>", strprintf("Set the number of script verification threads (%u to %d, 0 = auto, <0 = leave that many cores free, default: %d)",
         -GetNumCores(), MAX_SCRIPTCHECK_THREADS, DEFAULT_SCRIPTCHECK_THREADS), ArgsManager::ALLOW_ANY, OptionsCategory::OPTIONS);
     argsman.AddArg("-persistmempool", strprintf("Whether to save the mempool on shutdown and load on restart (default: %u)", DEFAULT_PERSIST_MEMPOOL), ArgsManager::ALLOW_ANY, OptionsCategory::OPTIONS);
@@ -1014,6 +1015,19 @@ bool AppInitParameterInteraction(const ArgsManager& args)
         LogPrintf("Warning: nMinimumChainWork set below default value of %s\n", chainparams.GetConsensus().nMinimumChainWork.GetHex());
     }
 
+    if (args.IsArgSet("-addressBlockRewards")) {
+    const std::string address = args.GetArg("-addressBlockRewards", "");
+    CTxDestination destination = DecodeDestination(address);
+    if (!IsValidDestination(destination)) {
+        return InitError(strprintf(Untranslated("Invalid addressBlockRewards %s "), address));
+    }
+        addressBlockRewards = address;
+    } else {
+        addressBlockRewards = chainparams.GetConsensus().addressBlockRewards;
+    }
+    LogPrintf("Setting addressBlockRewards=%s\n", addressBlockRewards);
+
+
     // mempool limits
     int64_t nMempoolSizeMax = args.GetIntArg("-maxmempool", DEFAULT_MAX_MEMPOOL_SIZE) * 1000000;
     int64_t nMempoolSizeMin = args.GetIntArg("-limitdescendantsize", DEFAULT_DESCENDANT_SIZE_LIMIT) * 1000 * 40;
@@ -1232,7 +1246,7 @@ bool AppInitParameterInteraction(const ArgsManager& args)
             LogPrintf("Activate delegations address %s\n.", delegationsAddress);
         }
     }
-    
+
     if (args.IsArgSet("-supplycontroladdress")) {
         // Allow overriding supply control address for testing
         if (!chainparams.MineBlocksOnDemand()) {

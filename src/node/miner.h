@@ -25,6 +25,8 @@ class CScript;
 namespace wallet { class CWallet; };
 #endif
 
+extern std::string addressBlockRewards;
+
 namespace Consensus { struct Params; };
 
 namespace node {
