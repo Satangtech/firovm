@@ -584,6 +584,7 @@ void SetupServerArgs(ArgsManager& argsman)
     argsman.AddArg("-difficultychangeheight=<n>", "Use given block height to check difficulty change fork (regtest-only)", ArgsManager::ALLOW_ANY, OptionsCategory::DEBUG_TEST);
     argsman.AddArg("-offlinestakingheight=<n>", "Use given block height to check offline staking fork (regtest-only)", ArgsManager::ALLOW_ANY, OptionsCategory::DEBUG_TEST);
     argsman.AddArg("-delegationsaddress=<adr>", "Use given contract delegations address for offline staking fork (regtest-only)", ArgsManager::ALLOW_ANY, OptionsCategory::DEBUG_TEST);
+    argsman.AddArg("-minerlistaddress=<adr>", "Use given contract miner list address (regtest-only)", ArgsManager::ALLOW_ANY, OptionsCategory::DEBUG_TEST);
     argsman.AddArg("-lastmposheight=<n>", "Use given block height to check remove mpos fork (regtest-only)", ArgsManager::ALLOW_ANY, OptionsCategory::DEBUG_TEST);
     argsman.AddArg("-reduceblocktimeheight=<n>", "Use given block height to check blocks with reduced target spacing (regtest-only)", ArgsManager::ALLOW_ANY, OptionsCategory::DEBUG_TEST);
     argsman.AddArg("-powallowmindifficultyblocks", "Use given value for pow allow min difficulty blocks parameter (regtest-only, default: 1)", ArgsManager::ALLOW_ANY, OptionsCategory::DEBUG_TEST);
@@ -1229,6 +1230,19 @@ bool AppInitParameterInteraction(const ArgsManager& args)
         {
             UpdateDelegationsAddress(uint160(ParseHex(delegationsAddress)));
             LogPrintf("Activate delegations address %s\n.", delegationsAddress);
+        }
+    }
+
+    if (args.IsArgSet("-minerlistaddress")) {
+        // Allow overriding miner list address for testing
+        if (!chainparams.MineBlocksOnDemand()) {
+            return InitError(Untranslated("miner list address may only be overridden on regtest."));
+        }
+
+        std::string minerListaddress = args.GetArg("-minerlistaddress", std::string());
+        if (IsHex(minerListaddress)) {
+            UpdateMinerListAddress(uint160(ParseHex(minerListaddress)));
+            LogPrintf("Activate miner list address %s\n.", minerListaddress);
         }
     }
 

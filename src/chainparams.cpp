@@ -247,6 +247,7 @@ public:
         consensus.nCheckpointSpan = consensus.nCoinbaseMaturity;
         consensus.nRBTCheckpointSpan = consensus.nRBTCoinbaseMaturity;
         consensus.delegationsAddress = uint160(ParseHex("0000000000000000000000000000000000000086")); // Delegations contract for offline staking
+        consensus.minerListAddress = uint160(ParseHex("0000000000000000000000000000000000000880"));
         consensus.nStakeTimestampMask = 15;
         consensus.nRBTStakeTimestampMask = 3;
     }
@@ -387,6 +388,7 @@ public:
         consensus.nCheckpointSpan = consensus.nCoinbaseMaturity;
         consensus.nRBTCheckpointSpan = consensus.nRBTCoinbaseMaturity;
         consensus.delegationsAddress = uint160(ParseHex("0000000000000000000000000000000000000086")); // Delegations contract for offline staking
+        consensus.minerListAddress = uint160(ParseHex("0000000000000000000000000000000000000880"));
         consensus.nStakeTimestampMask = 15;
         consensus.nRBTStakeTimestampMask = 3;
     }
@@ -528,6 +530,7 @@ public:
         consensus.nCheckpointSpan = consensus.nCoinbaseMaturity;
         consensus.nRBTCheckpointSpan = consensus.nRBTCoinbaseMaturity;
         consensus.delegationsAddress = uint160(ParseHex("0000000000000000000000000000000000000086")); // Delegations contract for offline staking
+        consensus.minerListAddress = uint160(ParseHex("0000000000000000000000000000000000000880"));
         consensus.nStakeTimestampMask = 15;
         consensus.nRBTStakeTimestampMask = 3;
     }
@@ -617,7 +620,7 @@ public:
 
         checkpointData = {
             {
-                {0, uint256S("5a167e82f196f50234bc6ff7a67dc8a03fcdb52695f07ec4cdc3e5127e56683d")},
+                {0, uint256S("3da7bea7fa8e410b019f7bafb19e03e0cc14433e04ef0df364e68bbb4ac2a620")},
             }
         };
 
@@ -648,6 +651,7 @@ public:
         consensus.nCheckpointSpan = consensus.nCoinbaseMaturity;
         consensus.nRBTCheckpointSpan = consensus.nRBTCoinbaseMaturity;
         consensus.delegationsAddress = uint160(ParseHex("0000000000000000000000000000000000000086")); // Delegations contract for offline staking
+        consensus.minerListAddress = uint160(ParseHex("0000000000000000000000000000000000000880"));
         consensus.nStakeTimestampMask = 15;
         consensus.nRBTStakeTimestampMask = 3;
 
@@ -915,6 +919,16 @@ void CChainParams::UpdateDelegationsAddress(const uint160& address)
 void UpdateDelegationsAddress(const uint160& address)
 {
     const_cast<CChainParams*>(globalChainParams.get())->UpdateDelegationsAddress(address);
+}
+
+void CChainParams::UpdateMinerListAddress(const uint160& address)
+{
+    consensus.minerListAddress = address;
+}
+
+void UpdateMinerListAddress(const uint160& address)
+{
+    const_cast<CChainParams*>(globalChainParams.get())->UpdateMinerListAddress(address);
 }
 
 void CChainParams::UpdateLastMPoSBlockHeight(int nHeight)

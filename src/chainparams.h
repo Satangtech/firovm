@@ -128,6 +128,7 @@ public:
     void UpdateDifficultyChangeBlockHeight(int nHeight);
     void UpdateOfflineStakingBlockHeight(int nHeight);
     void UpdateDelegationsAddress(const uint160& address);
+    void UpdateMinerListAddress(const uint160& address);
     void UpdateLastMPoSBlockHeight(int nHeight);
     void UpdateReduceBlocktimeHeight(int nHeight);
     void UpdatePowAllowMinDifficultyBlocks(bool fValue);
@@ -217,6 +218,11 @@ void UpdateOfflineStakingBlockHeight(int nHeight);
  * Allows modifying the delegations address regtest parameter.
  */
 void UpdateDelegationsAddress(const uint160& address);
+
+/**
+ * Allows modifying the miner list contract address regtest parameter.
+ */
+void UpdateMinerListAddress(const uint160& address);
 
 /**
  * @brief UpdateLastMPoSBlockHeight Last mpos block height

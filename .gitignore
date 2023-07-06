@@ -13,6 +13,11 @@ src/bitcoin-wallet
 src/test/fuzz/fuzz
 src/test/test_bitcoin
 src/qt/test/test_bitcoin-qt
+src/firovm-cli
+src/firovm-tx
+src/firovm-util
+src/firovm-wallet
+src/firovmd
 
 # autoreconf
 Makefile.in
@@ -169,3 +174,6 @@ src/test/test_qtum_fuzzy
 Debug
 src/secp256k1/gen_context
 src/secp256k1/src/ecmult_static_context.h
+
+# vscode
+.vscode/
