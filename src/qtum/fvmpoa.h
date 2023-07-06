@@ -7,6 +7,8 @@
 extern const std::string strPoAABI;
 
 class FVMPoA {
+private:
+    dev::Address minerLimitAddress;
 
 public:
     FVMPoA();
