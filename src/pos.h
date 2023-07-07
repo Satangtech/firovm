@@ -73,4 +73,6 @@ bool GetMPoSOutputs(std::vector<CTxOut>& mposOutputList, int64_t nRewardPiece, i
 
 bool CreateMPoSOutputs(CMutableTransaction& txNew, int64_t nRewardPiece, int nHeight, const Consensus::Params& consensusParams, CChain& chain, node::BlockManager& blockman);
 
+bool CheckMinerMembership(BlockValidationState& state, const Coin &coin, const COutPoint &prevOut, CChainState &chainstate);
+
 #endif // QUANTUM_POS_H

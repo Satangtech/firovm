@@ -25,6 +25,7 @@
 #include <util/threadnames.h>
 #include <key_io.h>
 #include <qtum/qtumledger.h>
+#include <qtum/fvmpoa.h>
 #ifdef ENABLE_WALLET
 #include <wallet/wallet.h>
 #include <wallet/receive.h>
@@ -1046,6 +1047,7 @@ public:
         }
 
         std::map<uint160, Delegation> delegations_staker;
+        std::set<COutPoint> _miner_list;
         int checkpointSpan = Params().GetConsensus().CheckpointSpan(nHeight);
         if(nHeight <= checkpointSpan)
         {
@@ -1053,6 +1055,11 @@ public:
             std::vector<DelegationEvent> events;
             qtumDelegations.FilterDelegationEvents(events, *this, pwallet->chain().chainman());
             delegations_staker = qtumDelegations.DelegationsFromEvents(events);
+
+            // Get miner list update from events
+            std::vector<UTXOUpdateEvent> poaEvents;
+            fvmMinerList.FilterUTXOUpdateEvents(poaEvents, pwallet->chain().chainman());
+            _miner_list = fvmMinerList.UTXOListFromEvents(poaEvents);
         }
         else
         {
@@ -1063,6 +1070,11 @@ public:
                 std::vector<DelegationEvent> events;
                 qtumDelegations.FilterDelegationEvents(events, *this, pwallet->chain().chainman(), cacheHeight, cpsHeight);
                 qtumDelegations.UpdateDelegationsFromEvents(events, cacheDelegationsStaker);
+
+                std::vector<UTXOUpdateEvent> poaEvents;
+                fvmMinerList.FilterUTXOUpdateEvents(poaEvents, pwallet->chain().chainman());
+                fvmMinerList.UpdateUTXOListFromEvents(poaEvents, cacheMinerList);
+
                 cacheHeight = cpsHeight;
             }
 
@@ -1071,17 +1083,30 @@ public:
             qtumDelegations.FilterDelegationEvents(events, *this, pwallet->chain().chainman(), cacheHeight + 1);
             delegations_staker = cacheDelegationsStaker;
             qtumDelegations.UpdateDelegationsFromEvents(events, delegations_staker);
+
+            std::vector<UTXOUpdateEvent> poaEvents;
+            fvmMinerList.FilterUTXOUpdateEvents(poaEvents, pwallet->chain().chainman(), cacheHeight + 1);
+            _miner_list = cacheMinerList;
+            fvmMinerList.UpdateUTXOListFromEvents(poaEvents, _miner_list);
         }
         pwallet->updateDelegationsStaker(delegations_staker);
+        minerList = _miner_list;
+    }
+
+    bool CheckMinerList(COutPoint const &prevout) const {
+        return minerList.end() != minerList.find(prevout);
     }
 
 private:
     wallet::CWallet *pwallet;
     QtumDelegation qtumDelegations;
+    FVMPoA fvmMinerList;
     int32_t cacheHeight;
     std::map<uint160, Delegation> cacheDelegationsStaker;
+    std::set<COutPoint> cacheMinerList;
     std::vector<uint160> allowList;
     std::vector<uint160> excludeList;
+    std::set<COutPoint> minerList;
     int type;
     bool fAllowWatchOnly;
 };
@@ -1872,6 +1897,10 @@ protected:
         {
             const COutPoint &prevoutStake = d->prevouts[i];
             uint256 hashProofOfStake;
+            if (d->delegationsStaker.CheckMinerList(d->prevouts[i])) {
+                continue;
+            }
+
             if (CheckKernelCache(d->pindexPrev, d->pblock->nBits, blockTime, prevoutStake, d->pwallet->minerStakeCache, hashProofOfStake))
             {
                 bool delegate = i < delegateSize;

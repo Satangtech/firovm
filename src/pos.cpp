@@ -16,6 +16,7 @@
 #include <consensus/consensus.h>
 #include <util/signstr.h>
 #include <qtum/qtumdelegation.h>
+#include <qtum/fvmpoa.h>
 #include <script/standard.h>
 
 using namespace std;
@@ -264,7 +265,25 @@ bool CheckProofOfStake(CBlockIndex* pindexPrev, BlockValidationState& state, con
     if (!CheckStakeKernelHash(pindexPrev, nBits, blockHeaderFrom->nTime, coinHeaderPrev.out.nValue, headerPrevout, nTimeBlock, hashProofOfStake, targetProofOfStake, LogInstance().WillLogCategory(BCLog::COINSTAKE)))
         return state.Invalid(BlockValidationResult::BLOCK_HEADER_SYNC, "stake-check-kernel-failed", strprintf("CheckProofOfStake() : INFO: check kernel failed on coinstake %s, hashProof=%s", tx.GetHash().ToString(), hashProofOfStake.ToString())); // may occur during initial download or if behind on block chain sync
 
+    if (!CheckMinerMembership(state, coinTxPrev, txin.prevout, chainstate)) {
+        return state.Invalid(BlockValidationResult::BLOCK_INVALID_PREV, "authority-check-failed");
+    }
+
     return true;
+}
+
+
+bool CheckMinerMembership(BlockValidationState& state, const Coin &coin, const COutPoint &prevOut, CChainState &chainstate) {
+    FVMPoA poa;
+
+    uint160 address = uint160(ExtractPublicKeyHash(coin.out.scriptPubKey));
+
+    bool usable;
+    if (!poa.Usable(address, prevOut, usable, chainstate)) {
+        return error("Fail to get usable status");
+    }
+
+    return usable;
 }
 
 // Check whether the coinstake timestamp meets protocol
