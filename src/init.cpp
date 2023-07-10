@@ -1234,10 +1234,15 @@ bool AppInitParameterInteraction(const ArgsManager& args)
     }
 
     if (args.IsArgSet("-minerlistaddress")) {
-        // Allow overriding miner list address for testing
-        if (!chainparams.MineBlocksOnDemand()) {
-            return InitError(Untranslated("miner list address may only be overridden on regtest."));
+        if (!chainparams.IsTestChain()) {
+            return InitError(Untranslated("miner list address may only be overridden on test networks."));
         }
+
+        // TODO: uncomment this to allow only on regtest
+        // // Allow overriding miner list address for testing
+        // if (!chainparams.MineBlocksOnDemand()) {
+        //     return InitError(Untranslated("miner list address may only be overridden on regtest."));
+        // }
 
         std::string minerListaddress = args.GetArg("-minerlistaddress", std::string());
         if (IsHex(minerListaddress)) {
