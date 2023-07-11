@@ -25,7 +25,7 @@ bool FVMPoA::Usable(const uint160& address, const COutPoint& utxo, bool& usable,
     //  setup input and execute
     std::vector<std::vector<std::string>> inputValues = {
         {address.GetReverseHex()},
-        {"0x"+utxo.hash.GetReverseHex()},
+        {"0x"+utxo.hash.GetHex()},
         {uint256(utxo.n).GetHex()}
     };
 
@@ -270,7 +270,8 @@ bool FVMPoA::GetUTXOUpdateEvent(const std::vector<std::string> &topics, const st
             } else if (name == "index") {
                 event.output.n = (uint32_t)atoi64(value[0]);
             } else if (name == "txId") {
-                event.output.hash = uint256S(value[0]);
+                auto const id = u256Touint(dev::u256(value[0])).GetReverseHex();
+                event.output.hash = uint256S(id);
             }else {
                 return error("Invalid utxo update event input name");
             }
