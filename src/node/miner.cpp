@@ -1207,9 +1207,9 @@ private:
     bool fAllowWatchOnly;
 };
 
-class MinerList {
+class CoinList {
 public:
-    MinerList(wallet::CWallet *_pwallet):
+    CoinList(wallet::CWallet *_pwallet):
         pwallet(_pwallet),
         cacheHeight(0)
     {
@@ -1229,6 +1229,7 @@ public:
             std::vector<UTXOUpdateEvent> events;
             fvmMinerList.FilterUTXOUpdateEvents(events, pwallet->chain().chainman());
             minerList = fvmMinerList.UTXOListFromEvents(events);
+            fvmMinerList.UpdateUTXOListFromBlocks(minerList, pwallet->chain().chainman());
         }
         else
         {
@@ -1239,6 +1240,7 @@ public:
                 std::vector<UTXOUpdateEvent> events;
                 fvmMinerList.FilterUTXOUpdateEvents(events, pwallet->chain().chainman(), cacheHeight, cpsHeight);
                 fvmMinerList.UpdateUTXOListFromEvents(events, cacheMinerList);
+                fvmMinerList.UpdateUTXOListFromBlocks(cacheMinerList, pwallet->chain().chainman(), cacheHeight, cpsHeight);
                 cacheHeight = cpsHeight;
             }
 
@@ -1247,6 +1249,7 @@ public:
             fvmMinerList.FilterUTXOUpdateEvents(events, pwallet->chain().chainman(), cacheHeight + 1);
             minerList = cacheMinerList;
             fvmMinerList.UpdateUTXOListFromEvents(events, minerList);
+            fvmMinerList.UpdateUTXOListFromBlocks(minerList, pwallet->chain().chainman(), cacheHeight + 1);
         }
     }
 
@@ -1639,13 +1642,13 @@ class StakeMiner : public IStakeMiner
 {
 private:
     StakeMinerPriv *d = 0;
-    MinerList *m = 0;
+    CoinList *m = 0;
 
 public:
     void Init(wallet::CWallet *pwallet) override
     {
         d = new StakeMinerPriv(pwallet);
-        m = new MinerList(pwallet);
+        m = new CoinList(pwallet);
     }
 
     void Run() override

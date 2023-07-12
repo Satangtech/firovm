@@ -265,7 +265,7 @@ bool CheckProofOfStake(CBlockIndex* pindexPrev, BlockValidationState& state, con
     if (!CheckStakeKernelHash(pindexPrev, nBits, blockHeaderFrom->nTime, coinHeaderPrev.out.nValue, headerPrevout, nTimeBlock, hashProofOfStake, targetProofOfStake, LogInstance().WillLogCategory(BCLog::COINSTAKE)))
         return state.Invalid(BlockValidationResult::BLOCK_HEADER_SYNC, "stake-check-kernel-failed", strprintf("CheckProofOfStake() : INFO: check kernel failed on coinstake %s, hashProof=%s", tx.GetHash().ToString(), hashProofOfStake.ToString())); // may occur during initial download or if behind on block chain sync
 
-    if (!CheckMinerMembership(state, coinTxPrev, txin.prevout, chainstate)) {
+    if (!CheckCoinList(state, coinTxPrev, txin.prevout, chainstate)) {
         return state.Invalid(BlockValidationResult::BLOCK_INVALID_PREV, "authority-check-failed");
     }
 
@@ -273,7 +273,7 @@ bool CheckProofOfStake(CBlockIndex* pindexPrev, BlockValidationState& state, con
 }
 
 
-bool CheckMinerMembership(BlockValidationState& state, const Coin &coin, const COutPoint &prevOut, CChainState &chainstate) {
+bool CheckCoinList(BlockValidationState& state, const Coin &coin, const COutPoint &prevOut, CChainState &chainstate) {
     FVMPoA poa;
 
     uint160 address = uint160(ExtractPublicKeyHash(coin.out.scriptPubKey));
@@ -782,6 +782,15 @@ bool CreateMPoSOutputs(CMutableTransaction& txNew, int64_t nRewardPiece, int nHe
     for(unsigned int i = 0; i < mposOutputList.size(); i++)
     {
         txNew.vout.push_back(mposOutputList[i]);
+    }
+
+    return true;
+}
+
+bool UpdateCoinList(BlockValidationState& state, const CTransaction& tx, CChainState &chainstate, CCoinsViewCache& view) {
+    FVMPoA poa;
+    if (!poa.Update(uint160(ExtractPublicKeyHash(tx.vout[0].scriptPubKey)), tx.vin[0].prevout, {tx.GetHash(), 0}, chainstate)) {
+        return state.Error("fail to update coin list");
     }
 
     return true;
