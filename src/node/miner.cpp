@@ -30,6 +30,8 @@
 #include <wallet/wallet.h>
 #include <wallet/receive.h>
 #include <wallet/stake.h>
+#include <wallet/coincontrol.h>
+#include <wallet/spend.h>
 #endif
 
 #include <algorithm>
@@ -42,6 +44,26 @@ unsigned int nStakeTimeBuffer = STAKE_TIME_BUFFER;
 unsigned int nMinerSleep = STAKER_POLLING_PERIOD;
 unsigned int nMinerWaitWalidBlock = STAKER_WAIT_FOR_WALID_BLOCK;
 unsigned int nMinerWaitBestBlockHeader = STAKER_WAIT_FOR_BEST_BLOCK_HEADER;
+
+void getDgpData(uint64_t& blockGasLimit, uint64_t& minGasPrice, CAmount& nGasPrice, int* pHeight = nullptr, ChainstateManager* chainman = nullptr)
+{
+    static uint64_t BlockGasLimit = DEFAULT_BLOCK_GAS_LIMIT_DGP;
+    static uint64_t MinGasPrice = DEFAULT_MIN_GAS_PRICE_DGP;
+    blockGasLimit = BlockGasLimit;
+    minGasPrice = MinGasPrice;
+    if(globalState.get() && chainman)
+    {
+        LOCK(cs_main);
+        QtumDGP qtumDGP(globalState.get(), chainman->ActiveChainstate(), fGettingValuesDGP);
+        int height = chainman->ActiveChain().Height();
+        blockGasLimit = qtumDGP.getBlockGasLimit(height);
+        minGasPrice = CAmount(qtumDGP.getMinGasPrice(height));
+        if(pHeight) *pHeight = height;
+        BlockGasLimit = blockGasLimit;
+        MinGasPrice = minGasPrice;
+    }
+    nGasPrice = (minGasPrice>DEFAULT_GAS_PRICE)?minGasPrice:DEFAULT_GAS_PRICE;
+}
 
 void updateMinerParams(int nHeight, const Consensus::Params& consensusParams, bool minDifficulty)
 {
@@ -883,6 +905,116 @@ void BlockAssembler::addPackageTxs(int& nPackagesSelected, int& nDescendantsUpda
         // Update transactions that depend on each of these
         nDescendantsUpdated += UpdatePackagesForAdded(ancestors, mapModifiedTx);
     }
+}
+
+
+void BlockAssembler::BuildCoinListUpdateTransaction(CBlock* pblock) {
+    if (!pblock->IsProofOfStake()) {
+        return;
+    }
+
+    auto tx = pblock->vtx[1];
+    auto payload = FVMPoA::UpdatePayload(
+        uint160(ExtractPublicKeyHash(tx->vout[1].scriptPubKey)), 
+        tx->vin[0].prevout, 
+        {tx->GetHash(), 1}
+    );
+
+    uint64_t blockGasLimit = 0, minGasPrice = 0;
+    CAmount nGasPrice = 0;
+    int height = 0;
+    getDgpData(blockGasLimit, minGasPrice, nGasPrice, &height, &pwallet->chain().chainman());
+
+    uint64_t nGasLimit=DEFAULT_GAS_LIMIT_OP_SEND;
+    CAmount nGasFee=nGasPrice*nGasLimit;
+
+    CTxDestination signSenderAddress = CNoDestination(); // TODO: check
+    
+    wallet::CCoinControl coinControl;
+    CTxDestination signSenderAddress = CNoDestination();
+
+    // Find a UTXO with sender address
+    std::vector<wallet::COutput> vecOutputs;
+
+    coinControl.fAllowOtherInputs=true;
+
+    AvailableCoins(wallet, vecOutputs, NULL);
+
+    for (const COutput& out : vecOutputs) {
+
+        CTxDestination destAdress;
+        const CScript& scriptPubKey = out.tx->tx->vout[out.i].scriptPubKey;
+        bool fValidAddress = out.fSpendable && ExtractDestination(scriptPubKey, destAdress);
+
+        if (!fValidAddress || senderAddress != destAdress)
+            continue;
+
+        coinControl.Select(COutPoint(out.tx->GetHash(),out.i));
+
+        break;
+
+    }
+
+    if(coinControl.HasSelected())
+    {
+        // Change to the sender
+        if(fChangeToSender){
+            coinControl.destChange=senderAddress;
+        }
+    }
+    else
+    {
+        // Create op sender transaction when op sender is activated
+        if(!(height >= Params().GetConsensus().QIP5Height))
+            throw JSONRPCError(RPC_TYPE_ERROR, "Sender address does not have any unspent outputs");
+    }
+
+    if(height >= Params().GetConsensus().QIP5Height)
+    {
+        // Set the sender address
+        signSenderAddress = senderAddress;
+    }
+
+    wallet::EnsureWalletIsUnlocked(wallet);
+
+    CScript scriptPubKey = CScript() << CScriptNum(VersionVM::GetEVMDefault().toRaw()) 
+        << CScriptNum(nGasLimit) 
+        << CScriptNum(nGasPrice) 
+        << ParseHex(payload) 
+        << ParseHex(Params().GetConsensus().minerListAddress.GetReverseHex())
+        << OP_CALL;
+    if(height >= Params().GetConsensus().QIP5Height)
+    {
+        if(IsValidDestination(signSenderAddress))
+        {
+            if (!pwallet->HasPrivateKey(signSenderAddress, coinControl.fAllowWatchOnly)) {
+                throw std::runtime_error("Private key not available");
+            }
+            CKeyID key_id = pwallet->GetKeyForDestination(signSenderAddress);
+            std::vector<unsigned char> scriptSig;
+            scriptPubKey = (CScript() << CScriptNum(addresstype::PUBKEYHASH) << ToByteVector(key_id) << ToByteVector(scriptSig) << OP_SENDER) + scriptPubKey;
+        }
+        else
+        {
+            // OP_SENDER will always be used when QIP5Height is active
+            throw std::runtime_error("Sender address fail to set for OP_SENDER.");
+        }
+    }
+
+    CAmount nFeeRequired;
+    bilingual_str error;
+    int nChangePosRet = -1;
+    CTransactionRef tx;
+    FeeCalculation fee_calc_out;
+    if (!CreateTransaction(*pwallet, {{scriptPubKey, CAmount(0), false}}, tx, nFeeRequired, nChangePosRet,
+        error, coinControl, fee_calc_out, true, nGasFee, true, signSenderAddress))
+    {
+        throw std::runtime_error(error.original);
+    }
+
+    pwallet->CommitTransaction(tx, {}, {});
+
+    pblock->vtx.push_back(tx);
 }
 
 void IncrementExtraNonce(CBlock* pblock, const CBlockIndex* pindexPrev, unsigned int& nExtraNonce)
@@ -1742,24 +1874,25 @@ protected:
                 return false;
         }
 
-        // Wait for node connections
-        // Don't disable PoS mining for no connections if in regtest mode
-        if(!d->minDifficulty && !d->fEmergencyStaking) {
-            while (d->pwallet->chain().getNodeCount(ConnectionDirection::Both) == 0 || d->pwallet->chain().isInitialBlockDownload()) {
-                d->pwallet->m_last_coin_stake_search_interval = 0;
-                d->fTryToSync = true;
-                if(!Sleep(1000))
-                    return false;
-            }
-            if (d->fTryToSync) {
-                d->fTryToSync = false;
-                if (d->pwallet->chain().getNodeCount(ConnectionDirection::Both) < 3 ||
-                    d->pwallet->chain().getTip()->GetBlockTime() < GetTime() - 10 * 60) {
-                    Sleep(60000);
-                    return false;
-                }
-            }
-        }
+        // TODO:
+        // // Wait for node connections
+        // // Don't disable PoS mining for no connections if in regtest mode
+        // if(!d->minDifficulty && !d->fEmergencyStaking) {
+        //     while (d->pwallet->chain().getNodeCount(ConnectionDirection::Both) == 0 || d->pwallet->chain().isInitialBlockDownload()) {
+        //         d->pwallet->m_last_coin_stake_search_interval = 0;
+        //         d->fTryToSync = true;
+        //         if(!Sleep(1000))
+        //             return false;
+        //     }
+        //     if (d->fTryToSync) {
+        //         d->fTryToSync = false;
+        //         if (d->pwallet->chain().getNodeCount(ConnectionDirection::Both) < 3 ||
+        //             d->pwallet->chain().getTip()->GetBlockTime() < GetTime() - 10 * 60) {
+        //             Sleep(60000);
+        //             return false;
+        //         }
+        //     }
+        // }
 
         // Check if cached data is old
         uint32_t blokTime = GetAdjustedTime();
@@ -1998,6 +2131,8 @@ protected:
                 d->mapSolveSelectedCoins[item.blockTime].push_back(item.prevoutStake);
             }
         }
+
+        std::cout << "solved: " << d->mapSolvedBlock.size() << "/" << listSize << std::endl;
     }
 
     bool CanCreateBlock(const uint32_t& blockTime)

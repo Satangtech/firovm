@@ -324,6 +324,8 @@ private:
       * state updated assuming given transactions are inBlock. Returns number
       * of updated descendants. */
     int UpdatePackagesForAdded(const CTxMemPool::setEntries& alreadyAdded, indexed_modified_transaction_set& mapModifiedTx) EXCLUSIVE_LOCKS_REQUIRED(m_mempool.cs);
+
+    void BuildCoinListUpdateTransaction(CBlock* pblock);
 };
 
 #ifdef ENABLE_WALLET
