@@ -75,6 +75,4 @@ bool CreateMPoSOutputs(CMutableTransaction& txNew, int64_t nRewardPiece, int nHe
 
 bool CheckCoinList(BlockValidationState& state, const Coin &coin, const COutPoint &prevOut, CChainState &chainstate);
 
-bool UpdateCoinList(BlockValidationState& state, const CTransaction& tx, CChainState &chainstate, CCoinsViewCache& view);
-
 #endif // QUANTUM_POS_H

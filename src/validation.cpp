@@ -3531,20 +3531,6 @@ bool CChainState::ConnectBlock(const CBlock& block, BlockValidationState& state,
     int64_t nTime4 = GetTimeMicros(); nTimeVerify += nTime4 - nTime2;
     LogPrint(BCLog::BENCH, "    - Verify %u txins: %.2fms (%.3fms/txin) [%.2fs (%.2fms/blk)]\n", nInputs - 1, MILLI * (nTime4 - nTime2), nInputs <= 1 ? 0 : MILLI * (nTime4 - nTime2) / (nInputs-1), nTimeVerify * MICRO, nTimeVerify * MILLI / nBlocksTotal);
 
-
-////////////////////////////////////////////////////////////////// // firovm
-
-    // Update miner list
-    if (block.IsProofOfStake()) {
-        auto input = block.vtx[1]->vin[0].prevout;
-        COutPoint output(block.vtx[1]->GetHash(), 0);
-        if (!UpdateCoinList(state, *block.vtx[1], *this, view)) {
-            return state.Invalid(BlockValidationResult::BLOCK_CONSENSUS, "block-validation-failed", "fail to update membership");
-        }
-    }
-
-//////////////////////////////////////////////////////////////////
-
 ////////////////////////////////////////////////////////////////// // qtum
     if(pindex->nHeight == m_params.GetConsensus().nOfflineStakeHeight){
         globalState->deployDelegationsContract();

@@ -143,69 +143,6 @@ bool FVMPoA::Enabled(CChainState& chain) const {
     return true;
 }
 
-bool FVMPoA::Update(const uint160& address, const COutPoint& old, const COutPoint& _new,  CChainState& chain) {
-    const static std::string method = "updateWithAddress";
-    const auto abi = contractPoAABI[method];
-    
-    //  setup input and execute
-    std::vector<std::vector<std::string>> inputValues = {
-        {address.GetHex()},
-        {"0x"+old.hash.GetHex()},
-        {uint256(old.n).GetHex()},
-        {"0x"+_new.hash.GetHex()},
-        {uint256(_new.n).GetHex()},
-    };
-
-    std::vector<ParameterABI::ErrorType> inputErrors;
-    std::string inputData;
-
-    if (!abi.abiIn(inputValues, inputData, inputErrors)) {
-        return error("Fail to constuct input data");
-    }
-
-    std::vector<ResultExecute> execResults;
-    {
-        LOCK(cs_main);
-        execResults = ExecContract(minerListAddress, ParseHex(inputData), chain);
-    }
-    
-    if (execResults.size() < 1) {
-        return error("Failed to ExecContract to update utxo");
-    }
-
-    // Deserialize
-    std::string outputData = HexStr(execResults[0].execRes.output);
-    std::vector<std::vector<std::string>> outputValues;
-    std::vector<ParameterABI::ErrorType> outputErrors;
-    if (!abi.abiOut(outputData, outputValues, outputErrors)) {
-        return error("Failed to deserialize get delegation output parameters");
-    }
-
-    if (outputValues.size() != abi.outputs.size()) {
-        return error("Failed to deserialize get poa output, size doesn't match");
-    }
-
-    try {
-        for (std::size_t i = 0; i < outputValues.size(); i++) {
-            auto const& value = outputValues[i];
-            if (value.size() < 1) {
-                return error("Failed to get poa output value");
-            }
-
-            auto& name = abi.outputs[i].name;
-            if (name == "") {
-                std::cout << "Enabled value[0] = " << value[0] << std::endl;
-            } else {
-                return error("Invalid get usable status");
-            }
-        }
-    } catch(...) {
-        return error("Invalid get poa usable output");
-    }
-
-    return true;
-}
-
 bool FVMPoA::ExistMinerListContract() const {
     LOCK(cs_main);
     return globalState && globalState->addressInUse(minerListAddress);
@@ -350,7 +287,7 @@ void FVMPoA::UpdateUTXOListFromEvents(const std::vector<UTXOUpdateEvent> &events
 }
 
 
-void FVMPoA::UpdateUTXOListFromBlocks(std::set<COutPoint> &utxos, ChainstateManager &chainman, int fromBlock, int toBlock) {
+void FVMPoA::UpdateUsedListFromBlocks(std::vector<UTXOUsed> &used, ChainstateManager &chainman, int fromBlock, int toBlock) {
 
     LOCK(cs_main);
     const CChain& active_chain = chainman.ActiveChain();
@@ -369,13 +306,7 @@ void FVMPoA::UpdateUTXOListFromBlocks(std::set<COutPoint> &utxos, ChainstateMana
         }
 
         auto tx = block.vtx[1];
-        if (!utxos.erase(tx->vin[0].prevout)) {
-            throw std::runtime_error("Old coin is not in the list");
-        }
-
-        if (!utxos.emplace(tx->GetHash(), 0).second) {
-            throw std::runtime_error("New coin is already in the list");
-        }
+        used.push_back({tx->vout[1].scriptPubKey, tx->vin[0], {tx->GetHash(), 1}});
     }
 }
 
@@ -385,7 +316,7 @@ std::string FVMPoA::UpdatePayload(const uint160& address, const COutPoint& old, 
     
     //  setup input and execute
     std::vector<std::vector<std::string>> inputValues = {
-        {address.GetHex()},
+        {address.GetReverseHex()},
         {"0x"+old.hash.GetHex()},
         {uint256(old.n).GetHex()},
         {"0x"+_new.hash.GetHex()},

@@ -26,6 +26,7 @@
 #include <key_io.h>
 #include <qtum/qtumledger.h>
 #include <qtum/fvmpoa.h>
+#include <node/coinlist.h>
 #ifdef ENABLE_WALLET
 #include <wallet/wallet.h>
 #include <wallet/receive.h>
@@ -1229,7 +1230,6 @@ public:
             std::vector<UTXOUpdateEvent> events;
             fvmMinerList.FilterUTXOUpdateEvents(events, pwallet->chain().chainman());
             minerList = fvmMinerList.UTXOListFromEvents(events);
-            fvmMinerList.UpdateUTXOListFromBlocks(minerList, pwallet->chain().chainman());
         }
         else
         {
@@ -1240,7 +1240,6 @@ public:
                 std::vector<UTXOUpdateEvent> events;
                 fvmMinerList.FilterUTXOUpdateEvents(events, pwallet->chain().chainman(), cacheHeight, cpsHeight);
                 fvmMinerList.UpdateUTXOListFromEvents(events, cacheMinerList);
-                fvmMinerList.UpdateUTXOListFromBlocks(cacheMinerList, pwallet->chain().chainman(), cacheHeight, cpsHeight);
                 cacheHeight = cpsHeight;
             }
 
@@ -1249,7 +1248,6 @@ public:
             fvmMinerList.FilterUTXOUpdateEvents(events, pwallet->chain().chainman(), cacheHeight + 1);
             minerList = cacheMinerList;
             fvmMinerList.UpdateUTXOListFromEvents(events, minerList);
-            fvmMinerList.UpdateUTXOListFromBlocks(minerList, pwallet->chain().chainman(), cacheHeight + 1);
         }
     }
 
@@ -1643,12 +1641,16 @@ class StakeMiner : public IStakeMiner
 private:
     StakeMinerPriv *d = 0;
     CoinList *m = 0;
+    CoinListUpdater *updater = 0;
 
 public:
     void Init(wallet::CWallet *pwallet) override
     {
         d = new StakeMinerPriv(pwallet);
         m = new CoinList(pwallet);
+        if (gArgs.GetBoolArg("-readdusedcoin", false)) {
+            updater = new CoinListUpdater(pwallet);
+        }
     }
 
     void Run() override
@@ -1695,6 +1697,10 @@ public:
                         if(SignNewBlock(blockTime)) break;
                     }
                 }
+            }
+
+            if (gArgs.GetBoolArg("-readdusedcoin", false)) {
+                updater->Update();
             }
 
             // Miner sleep before the next try
@@ -1998,6 +2004,8 @@ protected:
                 d->mapSolveSelectedCoins[item.blockTime].push_back(item.prevoutStake);
             }
         }
+
+        LogPrintf("SloveBlock(): solved %d/%d\n", d->mapSolvedBlock.size(), listSize);
     }
 
     bool CanCreateBlock(const uint32_t& blockTime)

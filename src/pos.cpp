@@ -786,12 +786,3 @@ bool CreateMPoSOutputs(CMutableTransaction& txNew, int64_t nRewardPiece, int nHe
 
     return true;
 }
-
-bool UpdateCoinList(BlockValidationState& state, const CTransaction& tx, CChainState &chainstate, CCoinsViewCache& view) {
-    FVMPoA poa;
-    if (!poa.Update(uint160(ExtractPublicKeyHash(tx.vout[0].scriptPubKey)), tx.vin[0].prevout, {tx.GetHash(), 0}, chainstate)) {
-        return state.Error("fail to update coin list");
-    }
-
-    return true;
-}

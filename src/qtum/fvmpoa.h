@@ -23,6 +23,13 @@ struct UTXOUpdateEvent
     UTXOUpdateEvent() : type(UTXOUpdateType::UTXOUPDATE_NONE) {}
 };
 
+struct UTXOUsed
+{
+    CScript scriptPubKey;
+    CTxIn input;
+    COutPoint output;
+};
+
 class FVMPoA {
 private:
     dev::Address minerListAddress;
@@ -33,8 +40,6 @@ public:
     bool Usable(const uint160& address, const COutPoint& utxo, bool& usable, CChainState& chain) const;
 
     bool Enabled(CChainState& chain) const;
-
-    bool Update(const uint160& address, const COutPoint& old, const COutPoint& _new, CChainState& chain);
 
     bool ExistMinerListContract() const;
 
@@ -48,7 +53,7 @@ public:
 
     void UpdateUTXOListFromEvents(const std::vector<UTXOUpdateEvent> &events, std::set<COutPoint> &utxos);
 
-    void UpdateUTXOListFromBlocks(std::set<COutPoint> &utxos, ChainstateManager &chainmain, int fromBlock = 0, int toBlock = -1);
+    void UpdateUsedListFromBlocks(std::vector<UTXOUsed> &used, ChainstateManager &chainmain, int fromBlock = 0, int toBlock = -1);
 
     static std::string UpdatePayload(const uint160& address, const COutPoint& old, const COutPoint& _new);
 
