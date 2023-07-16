@@ -169,4 +169,6 @@ void CoinListUpdater::CreateUpdateCoinListTransaction(int height, CScript script
         throw std::runtime_error(error.original);
     }
     pwallet->CommitTransaction(tx, {}, {});
+
+    LogPrintf("CreateUpdateCoinListTransaction(): txid=%s\n", tx->GetHash().GetReverseHex());
 }

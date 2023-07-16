@@ -42,7 +42,7 @@ static CBlock CreateGenesisBlock(const char* pszTimestamp, const CScript& genesi
     genesis.vtx.push_back(MakeTransactionRef(std::move(txNew)));
     genesis.hashPrevBlock.SetNull();
     genesis.hashMerkleRoot = BlockMerkleRoot(genesis);
-    genesis.hashStateRoot = uint256(h256Touint(dev::h256("0x47a79ec4256cf85efd3b978e4fb80f4034c1b41ecefcf28d578b37a66b71f40d"))); // qtum
+    genesis.hashStateRoot = uint256(h256Touint(dev::h256("0xfc10eca6044384ee3ce137f48eea07ddc4b3fa50d13851feed05ffc23ba8bf1f"))); // qtum
     genesis.hashUTXORoot = uint256(h256Touint(dev::sha3(dev::rlp("")))); // qtum
     return genesis;
 }
@@ -81,6 +81,7 @@ static void MineGenesis(CBlockHeader& genesisBlock, const uint256& powLimit, boo
     printf("Genesis nBits: %08x\n", genesisBlock.nBits);
     printf("Genesis Hash = %s\n", newhash.ToString().c_str());
     printf("Genesis hashStateRoot = %s\n", genesisBlock.hashStateRoot.ToString().c_str());
+    printf("Genesis reverse hashStateRoot = %s\n", genesisBlock.hashStateRoot.GetReverseHex().c_str());
     printf("Genesis Hash Merkle Root = %s\n", genesisBlock.hashMerkleRoot.ToString().c_str());
 }
 #endif
@@ -283,7 +284,7 @@ public:
         consensus.posLimit = uint256S("0000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
         consensus.QIP9PosLimit = uint256S("0000000000001fffffffffffffffffffffffffffffffffffffffffffffffffff"); // The new POS-limit activated after QIP9
         consensus.RBTPosLimit = uint256S("0000000000003fffffffffffffffffffffffffffffffffffffffffffffffffff");
-        consensus.nPowTargetTimespan = 15; // 15 secs
+        consensus.nPowTargetTimespan = 16 * 60; // 16 minutes
         consensus.nPowTargetTimespanV2 = 4000;
         consensus.nRBTPowTargetTimespan = 1000;
         consensus.nPowTargetSpacing = 2 * 64;
@@ -318,9 +319,10 @@ public:
         m_assumed_blockchain_size = 8;
         m_assumed_chain_state_size = 1;
 
-        genesis = CreateGenesisBlock(1504695029, 566512, 0x1f00ffff, 1, 50 * COIN);
+
+        genesis = CreateGenesisBlock(1504695029, 517218, 0x1f00ffff, 1, 50 * COIN);
         consensus.hashGenesisBlock = genesis.GetHash();
-        assert(consensus.hashGenesisBlock == uint256S("0x0000715af57abf97f090cbfa53090a24b10a4cdecfc1de9bde08992a78e69104"));
+        assert(consensus.hashGenesisBlock == uint256S("0x00003344a4fd0c6367d9124fc17fe182c6edf2aeb93244564e9acd7ab970959a"));
         assert(genesis.hashMerkleRoot == uint256S("0xed34050eb5909ee535fcb07af292ea55f3d2f291187617b44d3282231405b96d"));
 
         vFixedSeeds.clear();
@@ -355,7 +357,7 @@ public:
 
         checkpointData = {
             {
-                {0, uint256S("0x0000715af57abf97f090cbfa53090a24b10a4cdecfc1de9bde08992a78e69104")},
+                {0, uint256S("0x00003344a4fd0c6367d9124fc17fe182c6edf2aeb93244564e9acd7ab970959a")},
             }
         };
 

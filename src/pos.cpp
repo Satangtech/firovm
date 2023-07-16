@@ -78,7 +78,9 @@ bool CheckStakeKernelHash(CBlockIndex* pindexPrev, unsigned int nBits, uint32_t 
     bnTarget.SetCompact(nBits);
 
     // Weighted target
-    int64_t nValueIn = prevoutValue;
+    // NOTE: all utxos have the same weight in proof of authority
+    // int64_t nValueIn = prevoutValue;
+    int64_t nValueIn = DEFAULT_STAKING_WEIGHT;
     arith_uint256 bnWeight = arith_uint256(nValueIn);
     if(!fNoBNOverflow)
         bnTarget *= bnWeight;
