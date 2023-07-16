@@ -2007,7 +2007,7 @@ protected:
             }
         }
 
-        LogPrintf("SloveBlock(): solved %d/%d\n", d->mapSolvedBlock.size(), listSize);
+        LogPrintf("SloveBlock(): coins=%d, solved=%d\n", listSize, d->mapSolvedBlock.size());
     }
 
     bool CanCreateBlock(const uint32_t& blockTime)
