@@ -1,37 +1,45 @@
-FROM ubuntu:22.04 AS builder
-RUN apt update -y
-RUN apt install -y build-essential libtool autotools-dev automake pkg-config libssl-dev \
-    bsdmainutils python3 git cmake libboost-all-dev libgmp3-dev \
-    libevent-dev libboost-dev libboost-system-dev libboost-filesystem-dev libboost-test-dev \
-    libsqlite3-dev libminiupnpc-dev libnatpmp-dev libzmq3-dev curl bison byacc
+FROM debian:bullseye as builder
 
-WORKDIR /firovm
-COPY . .
+RUN apt-get update && apt-get install -y automake bsdmainutils g++ libtool make pkg-config patch bzip2 xz-utils
 
-RUN /firovm/contrib/install_db4.sh `pwd`
+WORKDIR /tmp/firovm
+COPY . /tmp/firovm
 
-RUN cd depends && make -j$(nproc) && cd .. && ./autogen.sh && \
-    ./configure --prefix=`pwd`/depends/x86_64-pc-linux-gnu --disable-tests --disable-bench --without-gui && \
-    make clean && make -j$(nproc) && make install
+# build depends
+RUN cd depends && make clean && make -j$(nproc) NO_QT=1 HOST=$(uname -m)-linux-gnu
 
-FROM ubuntu:22.04
+# build firovm
+RUN ./autogen.sh && \
+    ./configure --without-gui --prefix=/tmp/firovm/depends/$(uname -m)-linux-gnu --disable-tests && \
+    make -j$(nproc) && \
+    make install
 
-RUN apt-get update && useradd -ms /bin/bash firovm
+RUN mkdir /tmp/ldd
+RUN for library in $(ldd "./depends/$(uname -m)-linux-gnu/bin/firovmd" | cut -d '>' -f 2 | awk '{print $1}'); do [ -f "${library}" ] && cp --verbose --parents "${library}" "/tmp/ldd"; done
+RUN for library in $(ldd "./depends/$(uname -m)-linux-gnu/bin/firovm-cli" | cut -d '>' -f 2 | awk '{print $1}'); do [ -f "${library}" ] && cp --verbose --parents "${library}" "/tmp/ldd"; done
 
-WORKDIR /firovm
-RUN chown -R firovm:firovm /firovm
+RUN cp ./depends/$(uname -m)-linux-gnu/bin/* /usr/bin/
 
-COPY --from=builder /firovm/src/firovmd /usr/local/bin
-COPY --from=builder /firovm/src/firovm-cli /usr/local/bin
-COPY --from=builder /usr/lib/x86_64-linux-gnu/libboost_system.so.1.74.0 \
-    /usr/lib/x86_64-linux-gnu/libboost_filesystem.so.1.74.0 \
-    /usr/lib/x86_64-linux-gnu/libboost_thread.so.1.74.0 \
-    /usr/lib/x86_64-linux-gnu/libboost_program_options.so.1.74.0 \
-    /firovm/db4/lib/libdb_cxx-4.8.a \
-    /usr/lib/
+FROM debian:bullseye-slim
+
+COPY --from=builder /usr/bin/firovmd /usr/bin/firovmd
+COPY --from=builder /usr/bin/firovm-cli /usr/bin/firovm-cli
+COPY --from=builder /tmp/ldd /tmp/ldd
+
+RUN cp -vnrT /tmp/ldd / && \
+    rm -rf /tmp/ldd && \
+    ldd /usr/bin/firovmd && \
+    ldd /usr/bin/firovm-cli
+
+RUN useradd firovm && \
+    mkdir -p /firovm && \
+    chown -R firovm:firovm /firovm
 
 USER firovm
+WORKDIR /firovm
 
-EXPOSE 1234
+# Testnet ports
+EXPOSE 13888
+EXPOSE 13889
 
-ENTRYPOINT [ "firovmd", "-datadir=/firovm" ]
+ENTRYPOINT ["/usr/bin/firovmd", "-datadir=/firovm"]
