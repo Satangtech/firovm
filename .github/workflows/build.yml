@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - add-dockerfile
+    tags:
+      - 'testnet-v*'
 
 jobs:
   build:
