@@ -26,10 +26,7 @@ COPY --from=builder /usr/bin/firovmd /usr/bin/firovmd
 COPY --from=builder /usr/bin/firovm-cli /usr/bin/firovm-cli
 COPY --from=builder /tmp/ldd /tmp/ldd
 
-RUN cp -vnrT /tmp/ldd / && \
-    rm -rf /tmp/ldd && \
-    ldd /usr/bin/firovmd && \
-    ldd /usr/bin/firovm-cli
+RUN cp -vnrT /tmp/ldd / && rm -rf /tmp/ldd
 
 RUN useradd firovm && \
     mkdir -p /firovm && \
