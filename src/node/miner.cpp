@@ -26,6 +26,8 @@
 #include <util/threadnames.h>
 #include <key_io.h>
 #include <qtum/qtumledger.h>
+#include <qtum/fvmpoa.h>
+#include <node/coinlist.h>
 #ifdef ENABLE_WALLET
 #include <wallet/wallet.h>
 #include <wallet/receive.h>
@@ -1073,6 +1075,7 @@ public:
                 std::vector<DelegationEvent> events;
                 qtumDelegations.FilterDelegationEvents(events, *this, pwallet->chain().chainman(), cacheHeight, cpsHeight);
                 qtumDelegations.UpdateDelegationsFromEvents(events, cacheDelegationsStaker);
+
                 cacheHeight = cpsHeight;
             }
 
@@ -1213,6 +1216,61 @@ private:
     int32_t cacheAddressHeight;
     std::map<uint160, Delegation> cacheMyDelegations;
     bool fAllowWatchOnly;
+};
+
+class CoinList {
+public:
+    CoinList(wallet::CWallet *_pwallet):
+        pwallet(_pwallet),
+        cacheHeight(0)
+    {
+    }
+
+    void Update(int32_t nHeight)
+    {
+        if (!fLogEvents) {
+            throw std::runtime_error("Events log is required for miner list");
+        }
+
+        // When log events are enabled, search the log events to get complete list of my delegations
+        int checkpointSpan = Params().GetConsensus().CheckpointSpan(nHeight);
+        if(nHeight <= checkpointSpan)
+        {
+            // Get delegations from events
+            std::vector<UTXOUpdateEvent> events;
+            fvmMinerList.FilterUTXOUpdateEvents(events, pwallet->chain().chainman());
+            minerList = fvmMinerList.UTXOListFromEvents(events);
+        }
+        else
+        {
+            // Update the cached delegations for the staker, older then the sync checkpoint (500 blocks)
+            int cpsHeight = nHeight - checkpointSpan;
+            if(cacheHeight < cpsHeight)
+            {
+                std::vector<UTXOUpdateEvent> events;
+                fvmMinerList.FilterUTXOUpdateEvents(events, pwallet->chain().chainman(), cacheHeight, cpsHeight);
+                fvmMinerList.UpdateUTXOListFromEvents(events, cacheMinerList);
+                cacheHeight = cpsHeight;
+            }
+
+            // Update the wallet delegations
+            std::vector<UTXOUpdateEvent> events;
+            fvmMinerList.FilterUTXOUpdateEvents(events, pwallet->chain().chainman(), cacheHeight + 1);
+            minerList = cacheMinerList;
+            fvmMinerList.UpdateUTXOListFromEvents(events, minerList);
+        }
+        LogPrintf("Update(): minerList=%d\n", minerList.size());
+    }
+
+    bool Check(COutPoint const &out) const {
+        return minerList.find(out) != minerList.end();
+    }
+private:
+    wallet::CWallet *pwallet;
+    FVMPoA fvmMinerList;
+    std::set<COutPoint> minerList;
+    std::set<COutPoint> cacheMinerList;
+    int32_t cacheHeight;
 };
 
 bool CheckStake(const std::shared_ptr<const CBlock> pblock, wallet::CWallet& wallet)
@@ -1593,11 +1651,17 @@ class StakeMiner : public IStakeMiner
 {
 private:
     StakeMinerPriv *d = 0;
+    CoinList *m = 0;
+    CoinListUpdater *updater = 0;
 
 public:
     void Init(wallet::CWallet *pwallet) override
     {
         d = new StakeMinerPriv(pwallet);
+        m = new CoinList(pwallet);
+        if (gArgs.GetBoolArg("-readdusedcoin", false)) {
+            updater = new CoinListUpdater(pwallet);
+        }
     }
 
     void Run() override
@@ -1644,6 +1708,10 @@ public:
                         if(SignNewBlock(blockTime)) break;
                     }
                 }
+            }
+
+            if (gArgs.GetBoolArg("-readdusedcoin", false)) {
+                updater->Update();
             }
 
             // Miner sleep before the next try
@@ -1821,6 +1889,10 @@ protected:
         }
         d->stakeTimestampMask = d->consensusParams.StakeTimestampMask(d->nHeight);
 
+        // Update miner list
+        if (globalState->addressInUse(uintToh160(Params().GetConsensus().minerListAddress)))
+            m->Update(nHeightTip);
+
         d->haveCoinsForStake = d->setCoins.size() > 0 || d->pwallet->CanSuperStake(d->setCoins, d->setDelegateCoins);
         if(d->haveCoinsForStake)
         {
@@ -1833,10 +1905,19 @@ protected:
             }
             d->pblock = std::make_shared<CBlock>(d->pblocktemplate->block);
 
-            d->prevouts.insert(d->prevouts.end(), d->setDelegateCoins.begin(), d->setDelegateCoins.end());
+            LogPrintf("Update(): setDelegateCoins=%d, setCoins=%d\n", d->setDelegateCoins.size(), d->setCoins.size());
+            std::vector<COutPoint> tmp;
+            tmp.insert(d->prevouts.end(), d->setDelegateCoins.begin(), d->setDelegateCoins.end());
             for(const std::pair<const wallet::CWalletTx*,unsigned int> &pcoin : d->setCoins)
             {
-                d->prevouts.push_back(COutPoint(pcoin.first->GetHash(), pcoin.second));
+                tmp.push_back(COutPoint(pcoin.first->GetHash(), pcoin.second));
+            }
+
+            // filter out some unlisted
+            for (auto &out: tmp) {
+                if (m->Check(out)) {
+                    d->prevouts.push_back(out);
+                }
             }
 
             LOCK(cs_main);
@@ -1882,6 +1963,7 @@ protected:
         {
             const COutPoint &prevoutStake = d->prevouts[i];
             uint256 hashProofOfStake;
+
             if (CheckKernelCache(d->pindexPrev, d->pblock->nBits, blockTime, prevoutStake, d->pwallet->minerStakeCache, hashProofOfStake))
             {
                 bool delegate = i < delegateSize;
@@ -1934,6 +2016,8 @@ protected:
                 d->mapSolveSelectedCoins[item.blockTime].push_back(item.prevoutStake);
             }
         }
+
+        LogPrintf("SloveBlock(): coins=%d, solved=%d\n", listSize, d->mapSolvedBlock.size());
     }
 
     bool CanCreateBlock(const uint32_t& blockTime)

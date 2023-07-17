@@ -42,7 +42,7 @@ static CBlock CreateGenesisBlock(const char* pszTimestamp, const CScript& genesi
     genesis.vtx.push_back(MakeTransactionRef(std::move(txNew)));
     genesis.hashPrevBlock.SetNull();
     genesis.hashMerkleRoot = BlockMerkleRoot(genesis);
-    genesis.hashStateRoot = uint256(h256Touint(dev::h256("0x47a79ec4256cf85efd3b978e4fb80f4034c1b41ecefcf28d578b37a66b71f40d"))); // qtum
+    genesis.hashStateRoot = uint256(h256Touint(dev::h256("0xfc10eca6044384ee3ce137f48eea07ddc4b3fa50d13851feed05ffc23ba8bf1f"))); // qtum
     genesis.hashUTXORoot = uint256(h256Touint(dev::sha3(dev::rlp("")))); // qtum
     return genesis;
 }
@@ -81,6 +81,7 @@ static void MineGenesis(CBlockHeader& genesisBlock, const uint256& powLimit, boo
     printf("Genesis nBits: %08x\n", genesisBlock.nBits);
     printf("Genesis Hash = %s\n", newhash.ToString().c_str());
     printf("Genesis hashStateRoot = %s\n", genesisBlock.hashStateRoot.ToString().c_str());
+    printf("Genesis reverse hashStateRoot = %s\n", genesisBlock.hashStateRoot.GetReverseHex().c_str());
     printf("Genesis Hash Merkle Root = %s\n", genesisBlock.hashMerkleRoot.ToString().c_str());
 }
 #endif
@@ -254,6 +255,7 @@ public:
         consensus.nRBTCheckpointSpan = consensus.nRBTCoinbaseMaturity;
         consensus.delegationsAddress = uint160(ParseHex("0000000000000000000000000000000000000086")); // Delegations contract for offline staking
         consensus.supplyControlAddress = uint160(ParseHex("0000000000000000000000000000000000000882"));
+        consensus.minerListAddress = uint160(ParseHex("0000000000000000000000000000000000000880"));
         consensus.nStakeTimestampMask = 15;
         consensus.nRBTStakeTimestampMask = 3;
     }
@@ -281,7 +283,7 @@ public:
         consensus.QIP6Height = 0;
         consensus.QIP7Height = 0;
         consensus.QIP9Height = 0;
-        consensus.nOfflineStakeHeight = 0;
+        consensus.nOfflineStakeHeight = 1;
         consensus.nSupplyControlHeight = 10;
         consensus.nReduceBlocktimeHeight = 0;
         consensus.nMuirGlacierHeight = 0;
@@ -325,13 +327,10 @@ public:
         m_assumed_blockchain_size = 8;
         m_assumed_chain_state_size = 1;
 
-        genesis = CreateGenesisBlock(1504695029, 566512, 0x1f00ffff, 1, 50 * COIN);
-        consensus.hashGenesisBlock = genesis.GetHash();
-#ifdef MINE_GENESIS
-        MineGenesis(genesis, consensus.powLimit, false);
-#endif
 
-        assert(consensus.hashGenesisBlock == uint256S("0x0000715af57abf97f090cbfa53090a24b10a4cdecfc1de9bde08992a78e69104"));
+        genesis = CreateGenesisBlock(1504695029, 517218, 0x1f00ffff, 1, 50 * COIN);
+        consensus.hashGenesisBlock = genesis.GetHash();
+        assert(consensus.hashGenesisBlock == uint256S("0x00003344a4fd0c6367d9124fc17fe182c6edf2aeb93244564e9acd7ab970959a"));
         assert(genesis.hashMerkleRoot == uint256S("0xed34050eb5909ee535fcb07af292ea55f3d2f291187617b44d3282231405b96d"));
 
         vFixedSeeds.clear();
@@ -366,7 +365,7 @@ public:
 
         checkpointData = {
             {
-                {0, uint256S("0x0000715af57abf97f090cbfa53090a24b10a4cdecfc1de9bde08992a78e69104")},
+                {0, uint256S("0x00003344a4fd0c6367d9124fc17fe182c6edf2aeb93244564e9acd7ab970959a")},
             }
         };
 
@@ -386,8 +385,8 @@ public:
         consensus.nRBTCoinbaseMaturity = consensus.nBlocktimeDownscaleFactor*500;
         consensus.nSubsidyHalvingIntervalV2 = consensus.nBlocktimeDownscaleFactor*985500; // qtum halving every 4 years (nSubsidyHalvingInterval * nBlocktimeDownscaleFactor)
 
-        consensus.nLastPOWBlock = 4000;
-        consensus.nLastBigReward = 4000;
+        consensus.nLastPOWBlock = 8000;
+        consensus.nLastBigReward = 2000;
         consensus.nMPoSRewardRecipients = 10;
         consensus.nFirstMPoSBlock = consensus.nLastPOWBlock + 
                                     consensus.nMPoSRewardRecipients + 
@@ -400,6 +399,7 @@ public:
         consensus.nRBTCheckpointSpan = consensus.nRBTCoinbaseMaturity;
         consensus.delegationsAddress = uint160(ParseHex("0000000000000000000000000000000000000086")); // Delegations contract for offline staking
         consensus.supplyControlAddress = uint160(ParseHex("0000000000000000000000000000000000000882"));
+        consensus.minerListAddress = uint160(ParseHex("0000000000000000000000000000000000000880"));
         consensus.nStakeTimestampMask = 15;
         consensus.nRBTStakeTimestampMask = 3;
     }
@@ -546,6 +546,7 @@ public:
         consensus.nRBTCheckpointSpan = consensus.nRBTCoinbaseMaturity;
         consensus.delegationsAddress = uint160(ParseHex("0000000000000000000000000000000000000086")); // Delegations contract for offline staking
         consensus.supplyControlAddress = uint160(ParseHex("0000000000000000000000000000000000000882"));
+        consensus.minerListAddress = uint160(ParseHex("0000000000000000000000000000000000000880"));
         consensus.nStakeTimestampMask = 15;
         consensus.nRBTStakeTimestampMask = 3;
     }
@@ -637,7 +638,7 @@ public:
 
         checkpointData = {
             {
-                {0, uint256S("0x3da7bea7fa8e410b019f7bafb19e03e0cc14433e04ef0df364e68bbb4ac2a620")},
+                {0, uint256S("3da7bea7fa8e410b019f7bafb19e03e0cc14433e04ef0df364e68bbb4ac2a620")},
             }
         };
 
@@ -669,6 +670,7 @@ public:
         consensus.nRBTCheckpointSpan = consensus.nRBTCoinbaseMaturity;
         consensus.delegationsAddress = uint160(ParseHex("0000000000000000000000000000000000000086")); // Delegations contract for offline staking
         consensus.supplyControlAddress = uint160(ParseHex("0000000000000000000000000000000000000882"));
+        consensus.minerListAddress = uint160(ParseHex("0000000000000000000000000000000000000880"));
         consensus.nStakeTimestampMask = 15;
         consensus.nRBTStakeTimestampMask = 3;
 
@@ -956,6 +958,16 @@ void CChainParams::UpdateSupplyControlAddress(const uint160& address)
 void UpdateSupplyControlAddress(const uint160& address)
 {
     const_cast<CChainParams*>(globalChainParams.get())->UpdateSupplyControlAddress(address);
+}
+
+void CChainParams::UpdateMinerListAddress(const uint160& address)
+{
+    consensus.minerListAddress = address;
+}
+
+void UpdateMinerListAddress(const uint160& address)
+{
+    const_cast<CChainParams*>(globalChainParams.get())->UpdateMinerListAddress(address);
 }
 
 void CChainParams::UpdateLastMPoSBlockHeight(int nHeight)

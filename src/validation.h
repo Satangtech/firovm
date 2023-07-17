@@ -147,6 +147,8 @@ static const CAmount DEFAULT_STAKING_MIN_UTXO_VALUE = 100 * COIN;
 //! -forceinitialblocksdownloadmode default
 static const bool DEFAULT_FORCE_INITIAL_BLOCKS_DOWNLOAD_MODE = false;
 
+static const CAmount DEFAULT_STAKING_WEIGHT = 20000 * COIN;
+
 /** Current sync state passed to tip changed callbacks. */
 enum class SynchronizationState {
     INIT_REINDEX,

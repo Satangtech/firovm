@@ -2041,7 +2041,7 @@ bool CWallet::HasAddressStakeScripts(const uint160& keyId, std::map<uint160, boo
 {
     auto it = addressStakeCache.find(keyId);
     bool hasAddressInCache = it != addressStakeCache.end();
-    if(hasAddressInCache && _insertAddressStake)
+    if(!hasAddressInCache && _insertAddressStake)
     {
         it = _insertAddressStake->find(keyId);
         hasAddressInCache = it != _insertAddressStake->end();

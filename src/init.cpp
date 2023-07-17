@@ -585,6 +585,7 @@ void SetupServerArgs(ArgsManager& argsman)
     argsman.AddArg("-offlinestakingheight=<n>", "Use given block height to check offline staking fork (regtest-only)", ArgsManager::ALLOW_ANY, OptionsCategory::DEBUG_TEST);
     argsman.AddArg("-delegationsaddress=<adr>", "Use given contract delegations address for offline staking fork (regtest-only)", ArgsManager::ALLOW_ANY, OptionsCategory::DEBUG_TEST);
     argsman.AddArg("-supplycontroladdress=<adr>", "Use given contract supply control address (regtest-only)", ArgsManager::ALLOW_ANY, OptionsCategory::DEBUG_TEST);
+    argsman.AddArg("-minerlistaddress=<adr>", "Use given contract miner list address (regtest-only)", ArgsManager::ALLOW_ANY, OptionsCategory::DEBUG_TEST);
     argsman.AddArg("-lastmposheight=<n>", "Use given block height to check remove mpos fork (regtest-only)", ArgsManager::ALLOW_ANY, OptionsCategory::DEBUG_TEST);
     argsman.AddArg("-reduceblocktimeheight=<n>", "Use given block height to check blocks with reduced target spacing (regtest-only)", ArgsManager::ALLOW_ANY, OptionsCategory::DEBUG_TEST);
     argsman.AddArg("-powallowmindifficultyblocks", "Use given value for pow allow min difficulty blocks parameter (regtest-only, default: 1)", ArgsManager::ALLOW_ANY, OptionsCategory::DEBUG_TEST);
@@ -618,6 +619,7 @@ void SetupServerArgs(ArgsManager& argsman)
     argsman.AddArg("-staker-soft-block-gas-limit=<n>", "After this amount of gas is surpassed in a block, no more contract executions will be added to the block (defaults to consensus-critical maximum block gas limit)", ArgsManager::ALLOW_ANY, OptionsCategory::BLOCK_CREATION);
     argsman.AddArg("-aggressive-staking", "Check more often to publish immediately when valid block is found.", ArgsManager::ALLOW_ANY, OptionsCategory::BLOCK_CREATION);
     argsman.AddArg("-emergencystaking", "Emergency staking without blockchain synchronization.", ArgsManager::ALLOW_ANY, OptionsCategory::BLOCK_CREATION);
+    argsman.AddArg("-readdusedcoin", "Enable re-adding used coin", ArgsManager::ALLOW_ANY, OptionsCategory::BLOCK_CREATION);
 
     argsman.AddArg("-rest", strprintf("Accept public REST requests (default: %u)", DEFAULT_REST_ENABLE), ArgsManager::ALLOW_ANY, OptionsCategory::RPC);
     argsman.AddArg("-rpcallowip=<ip>", "Allow JSON-RPC connections from specified source. Valid for <ip> are a single IP (e.g. 1.2.3.4), a network/netmask (e.g. 1.2.3.4/255.255.255.0) or a network/CIDR (e.g. 1.2.3.4/24). This option can be specified multiple times", ArgsManager::ALLOW_ANY, OptionsCategory::RPC);
@@ -1244,6 +1246,24 @@ bool AppInitParameterInteraction(const ArgsManager& args)
         {
             UpdateSupplyControlAddress(uint160(ParseHex(supplycontroladdress)));
             LogPrintf("Activate supply control address %s\n.", supplycontroladdress);
+        }
+    }
+
+    if (args.IsArgSet("-minerlistaddress")) {
+        if (!chainparams.IsTestChain()) {
+            return InitError(Untranslated("miner list address may only be overridden on test networks."));
+        }
+
+        // TODO: uncomment this to allow only on regtest
+        // // Allow overriding miner list address for testing
+        // if (!chainparams.MineBlocksOnDemand()) {
+        //     return InitError(Untranslated("miner list address may only be overridden on regtest."));
+        // }
+
+        std::string minerListaddress = args.GetArg("-minerlistaddress", std::string());
+        if (IsHex(minerListaddress)) {
+            UpdateMinerListAddress(uint160(ParseHex(minerListaddress)));
+            LogPrintf("Activate miner list address %s\n.", minerListaddress);
         }
     }
 

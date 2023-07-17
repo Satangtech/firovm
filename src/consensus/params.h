@@ -173,6 +173,7 @@ struct Params {
     int nRBTCheckpointSpan;
     uint160 delegationsAddress;
     uint160 supplyControlAddress;
+    uint160 minerListAddress;
     int nLastMPoSBlock;
     int nLastBigReward;
     uint32_t nStakeTimestampMask;

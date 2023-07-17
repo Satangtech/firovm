@@ -130,6 +130,7 @@ public:
     void UpdateSupplyControlBlockHeight(int nHeight);
     void UpdateDelegationsAddress(const uint160& address);
     void UpdateSupplyControlAddress(const uint160& address);
+    void UpdateMinerListAddress(const uint160& address);
     void UpdateLastMPoSBlockHeight(int nHeight);
     void UpdateReduceBlocktimeHeight(int nHeight);
     void UpdatePowAllowMinDifficultyBlocks(bool fValue);
@@ -229,6 +230,11 @@ void UpdateDelegationsAddress(const uint160& address);
  * Allows modifying the supply control address regtest parameter
  */
 void UpdateSupplyControlAddress(const uint160& address);
+
+/**
+ * Allows modifying the miner list contract address regtest parameter.
+ */
+void UpdateMinerListAddress(const uint160& address);
 
 /**
  * @brief UpdateLastMPoSBlockHeight Last mpos block height
