@@ -1,6 +1,6 @@
 FROM debian:bullseye as builder
 
-RUN apt-get update && apt-get install -y automake bsdmainutils g++ libtool make pkg-config patch bzip2 xz-utils
+RUN apt-get update && apt-get install -y automake bsdmainutils g++ libtool make pkg-config patch bzip2 xz-utils curl
 
 WORKDIR /tmp/firovm
 COPY . /tmp/firovm
