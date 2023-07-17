@@ -1752,7 +1752,7 @@ protected:
         // Wait for node connections
         // Don't disable PoS mining for no connections if in regtest mode
         if(!d->minDifficulty && !d->fEmergencyStaking) {
-            while (/*d->pwallet->chain().getNodeCount(ConnectionDirection::Both) == 0 ||*/ d->pwallet->chain().isInitialBlockDownload()) {
+            while (d->pwallet->chain().getNodeCount(ConnectionDirection::Both) == 0 || d->pwallet->chain().isInitialBlockDownload()) {
                 d->pwallet->m_last_coin_stake_search_interval = 0;
                 d->fTryToSync = true;
                 if(!Sleep(1000))
@@ -1760,7 +1760,7 @@ protected:
             }
             if (d->fTryToSync) {
                 d->fTryToSync = false;
-                if (/*d->pwallet->chain().getNodeCount(ConnectionDirection::Both) < 3 ||*/
+                if (d->pwallet->chain().getNodeCount(ConnectionDirection::Both) < 3 ||
                     d->pwallet->chain().getTip()->GetBlockTime() < GetTime() - 10 * 60) {
                     Sleep(60000);
                     return false;

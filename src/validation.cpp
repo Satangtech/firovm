@@ -3634,7 +3634,7 @@ bool CChainState::ConnectBlock(const CBlock& block, BlockValidationState& state,
         }
     }
 
-     // The stake and delegate index is needed for MPoS, update it while MPoS is active
+    // The stake and delegate index is needed for MPoS, update it while MPoS is active
     if(pindex->nHeight <= m_params.GetConsensus().nLastMPoSBlock)
     {
         if(block.IsProofOfStake()){
