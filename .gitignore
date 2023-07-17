@@ -156,6 +156,7 @@ dist/
 
 /guix-build-*
 .cproject
+.firovm
 .project
 .settings/language.settings.xml
 src/qtum-cli
@@ -171,9 +172,9 @@ src/qt/test/test_qtum-qt
 src/test/buildenv.py
 src/test/test_qtum
 src/test/test_qtum_fuzzy
-Debug
 src/secp256k1/gen_context
 src/secp256k1/src/ecmult_static_context.h
 
 # vscode
 .vscode/
+Debug
