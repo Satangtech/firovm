@@ -18,11 +18,13 @@ struct Mint {
 };
 
 class FVMSupplyControl {
+private:
+    dev::Address supplyControlAddress;
 
 public:
     FVMSupplyControl();
 
-    bool getMint(int block, std::vector<Mint> &out, CChainState &chain);
+    bool GetMint(int block, std::vector<Mint> &out, CChainState &chain);
 };
 
 #endif // FVMSUPPLYCONTROL_H

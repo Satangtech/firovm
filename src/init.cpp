@@ -1238,7 +1238,7 @@ bool AppInitParameterInteraction(const ArgsManager& args)
     if (args.IsArgSet("-supplycontroladdress")) {
         // Allow overriding supply control address for testing
         if (!chainparams.MineBlocksOnDemand()) {
-            return InitError(Untranslated("delegations address may only be overridden on regtest."));
+            return InitError(Untranslated("supply control address may only be overridden on regtest."));
         }
 
         std::string supplycontroladdress = args.GetArg("-supplycontroladdress", std::string());
