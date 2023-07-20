@@ -19,16 +19,9 @@ bool FVMSupplyControl::GetMint(int nHeight, std::vector<Mint> &out, CChainState 
     const static std::string method = "getMint";
     const auto abi = contractSupplyControlABI[method];
 
-    std::vector<std::vector<std::string>> inputValues;
-    {
-        std::vector<std::string> paramBlock;
-
-        arith_uint256 block(nHeight);
-        const auto sHeight = block.GetHex();
-
-        paramBlock.push_back("0x"+block.GetHex());
-        inputValues.push_back(paramBlock);
-    }
+    std::vector<std::vector<std::string>> inputValues = {
+        {i64tostr(nHeight)},
+    };
 
     std::vector<ParameterABI::ErrorType> inputErrors;
     std::string inputData;

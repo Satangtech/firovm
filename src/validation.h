@@ -142,7 +142,8 @@ static const CAmount MAX_RPC_GAS_PRICE=0.00000100*COIN;
 static const size_t MAX_CONTRACT_VOUTS = 1000; // qtum
 
 //! -stakingminutxovalue default
-static const CAmount DEFAULT_STAKING_MIN_UTXO_VALUE = 100 * COIN;
+// static const CAmount DEFAULT_STAKING_MIN_UTXO_VALUE = 100 * COIN;
+static const CAmount DEFAULT_STAKING_MIN_UTXO_VALUE = 1;
 
 //! -forceinitialblocksdownloadmode default
 static const bool DEFAULT_FORCE_INITIAL_BLOCKS_DOWNLOAD_MODE = false;
@@ -473,7 +474,7 @@ public:
 
 extern std::unique_ptr<StorageResults> pstorageresult;
 
-bool CheckReward(const CBlock& block, BlockValidationState& state, int nHeight, const Consensus::Params& consensusParams, CAmount nFees, CAmount gasRefunds, CAmount nActualStakeReward, CAmount mintedSupply, const std::vector<CTxOut>& vouts, CAmount nValueCoinPrev, bool delegateOutputExist, CChain& chain, node::BlockManager& blockman);
+bool CheckReward(const CBlock& block, BlockValidationState& state, int nHeight, const Consensus::Params& consensusParams, CAmount nFees, CAmount gasRefunds, CAmount nActualStakeReward, const std::vector<CTxOut>& mints, const std::vector<CTxOut>& vouts, CAmount nValueCoinPrev, bool delegateOutputExist, CChain& chain, node::BlockManager& blockman);
 
 //////////////////////////////////////////////////////// qtum
 bool GetSpentCoinFromBlock(const CBlockIndex* pindex, COutPoint prevout, Coin* coin);

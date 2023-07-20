@@ -2482,18 +2482,13 @@ bool CheckReward(
     CAmount nFees, 
     CAmount gasRefunds, 
     CAmount nActualStakeReward, 
-    const std::vector<CTxOut> mints, 
+    const std::vector<CTxOut>& mints,
     const std::vector<CTxOut>& vouts, 
     CAmount nValueCoinPrev, 
     bool delegateOutputExist, 
     CChain& chain, 
     node::BlockManager& blockman)
 {
-    CAmount supplyMinted(0);
-    for (auto const &m: mints) {
-        supplyMinted += m.nValue;
-    }
-
     // Check gas refund
     size_t offset = block.IsProofOfStake() ? 1 : 0;
     std::vector<CTxOut> vTempVouts=block.vtx[offset]->vout;
@@ -2508,8 +2503,9 @@ bool CheckReward(
     }
 
     // Check mints
-    vTempVouts = block.vtx[offset]->vout;
+    CAmount supplyMinted(0);
     for (auto const &m: mints) {
+        supplyMinted += m.nValue;
         auto it = std::find(vTempVouts.begin(), vTempVouts.end(), m);
         if (it == vTempVouts.end()) {
             return state.Invalid(BlockValidationResult::BLOCK_CONSENSUS, "bad-mint-missing", "CheckReward(): Mints missing");

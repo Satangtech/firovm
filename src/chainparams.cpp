@@ -175,14 +175,10 @@ public:
         m_assumed_blockchain_size = 18;
         m_assumed_chain_state_size = 1;
 
-        genesis = CreateGenesisBlock(1504695029, 566512, 0x1f00ffff, 1, 50 * COIN);
+        genesis = CreateGenesisBlock(1504695029, 517218, 0x1f00ffff, 1, 50 * COIN);
         consensus.hashGenesisBlock = genesis.GetHash();
 
-#ifdef MINE_GENESIS
-        MineGenesis(genesis, consensus.powLimit, false);
-#endif
-
-        assert(consensus.hashGenesisBlock == uint256S("0x0000715af57abf97f090cbfa53090a24b10a4cdecfc1de9bde08992a78e69104"));
+        assert(consensus.hashGenesisBlock == uint256S("0x00003344a4fd0c6367d9124fc17fe182c6edf2aeb93244564e9acd7ab970959a"));
         assert(genesis.hashMerkleRoot == uint256S("0xed34050eb5909ee535fcb07af292ea55f3d2f291187617b44d3282231405b96d"));
 
         // Note that of those which support the service bits prefix, most only support a subset of
@@ -219,7 +215,7 @@ public:
 
         checkpointData = {
             {
-                { 0, uint256S("0x0000715af57abf97f090cbfa53090a24b10a4cdecfc1de9bde08992a78e69104")},
+                { 0, uint256S("0x00003344a4fd0c6367d9124fc17fe182c6edf2aeb93244564e9acd7ab970959a")},
             }
         };
 
@@ -246,7 +242,7 @@ public:
         consensus.nFirstMPoSBlock = consensus.nLastPOWBlock + 
                                     consensus.nMPoSRewardRecipients + 
                                     consensus.nCoinbaseMaturity;
-        consensus.nLastMPoSBlock = 679999;
+        consensus.nLastMPoSBlock = 0;
 
 
         consensus.nFixUTXOCacheHFHeight = 100000;
@@ -391,7 +387,7 @@ public:
         consensus.nFirstMPoSBlock = consensus.nLastPOWBlock + 
                                     consensus.nMPoSRewardRecipients + 
                                     consensus.nCoinbaseMaturity;
-        consensus.nLastMPoSBlock = 624999;
+        consensus.nLastMPoSBlock = 0;
 
         consensus.nFixUTXOCacheHFHeight = 84500;
         consensus.nEnableHeaderSignatureHeight = 391993;
@@ -505,12 +501,10 @@ public:
         nDefaultPort = 33888;
         nPruneAfterHeight = 1000;
 
-        genesis = CreateGenesisBlock(1623662135, 644193, 0x1f00ffff, 1, 50 * COIN);
+        genesis = CreateGenesisBlock(1623662135, 515925, 0x1f00ffff, 1, 50 * COIN);
         consensus.hashGenesisBlock = genesis.GetHash();
-#ifdef MINE_GENESIS
-        MineGenesis(genesis, consensus.powLimit, false);
-#endif
-        assert(consensus.hashGenesisBlock == uint256S("0x0000107223abedccb61087e46d44eaa2fcd3274cb8ff10cf4cfbfda9fa54d643"));
+
+        assert(consensus.hashGenesisBlock == uint256S("0x000061f1a8f5a2973280e4196d075309374e66669826435bfa745cf7695fc22d"));
         assert(genesis.hashMerkleRoot == uint256S("0xed34050eb5909ee535fcb07af292ea55f3d2f291187617b44d3282231405b96d"));
 
         vFixedSeeds.clear();
@@ -622,7 +616,7 @@ public:
         genesis = CreateGenesisBlock(1504695029, 500000, 0x207fffff, 1, 50 * COIN);
         consensus.hashGenesisBlock = genesis.GetHash();
 
-        assert(consensus.hashGenesisBlock == uint256S("0x3da7bea7fa8e410b019f7bafb19e03e0cc14433e04ef0df364e68bbb4ac2a620"));
+        assert(consensus.hashGenesisBlock == uint256S("0x14563671c8cfec713fdb3e3d7d678cd61adf816f6ea3a2a89a44deb9738077b3"));
         assert(genesis.hashMerkleRoot == uint256S("0xed34050eb5909ee535fcb07af292ea55f3d2f291187617b44d3282231405b96d"));
 
         vFixedSeeds.clear(); //!< Regtest mode doesn't have any fixed seeds.
@@ -638,7 +632,7 @@ public:
 
         checkpointData = {
             {
-                {0, uint256S("3da7bea7fa8e410b019f7bafb19e03e0cc14433e04ef0df364e68bbb4ac2a620")},
+                {0, uint256S("0x14563671c8cfec713fdb3e3d7d678cd61adf816f6ea3a2a89a44deb9738077b3")},
             }
         };
 

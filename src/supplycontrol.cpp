@@ -3,7 +3,7 @@
 bool AddSupplyControlOutputs(int nHeight, CMutableTransaction &tx, CChainState &state, bool fProofOfStake) {    
     FVMSupplyControl c;
     std::vector<Mint> mints;
-    if (!c.getMint(nHeight, mints, state)) {
+    if (!c.GetMint(nHeight, mints, state)) {
         return false;
     }
 
@@ -21,7 +21,7 @@ CAmount GetSupplyControlOutputs(int nHeight, std::vector<CTxOut> &outputs, CChai
 
     FVMSupplyControl c;
     std::vector<Mint> mints;
-    if (!c.getMint(nHeight, mints, state)) {
+    if (!c.GetMint(nHeight, mints, state)) {
         return false;
     }
 
