@@ -422,10 +422,29 @@ RPCHelpMan getaddressbalance()
         if (it->second > 0) {
             received += it->second;
         }
-        balance += it->second;
         int nHeight = active_chain.Height();
-        if (it->first.txindex == 1 && ((nHeight - it->first.blockHeight) < Params().GetConsensus().CoinbaseMaturity(nHeight)))
-            immature += it->second; //immature stake outputs
+        int lastPOWBlock =  Params().GetConsensus().nLastPOWBlock;
+
+        if (  it->first.blockHeight <= lastPOWBlock){
+            // POW DO
+            if (it->first.txindex == 0 ){
+                if(  ((nHeight - it->first.blockHeight) < Params().GetConsensus().CoinbaseMaturity(nHeight)) ){
+                     immature += it->second; //immature stake outputs
+                } else {
+                     balance += it->second;
+                }
+             }
+        }else {
+            // POS DO
+            if (it->first.txindex == 1 ){
+                if(  ((nHeight - it->first.blockHeight) < Params().GetConsensus().CoinbaseMaturity(nHeight)) ){
+                     immature += it->second; //immature stake outputs
+                } else {
+                     balance += it->second;
+                }
+             }
+
+        }
     }
 
     UniValue result(UniValue::VOBJ);
