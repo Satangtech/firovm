@@ -42,7 +42,7 @@ static CBlock CreateGenesisBlock(const char* pszTimestamp, const CScript& genesi
     genesis.vtx.push_back(MakeTransactionRef(std::move(txNew)));
     genesis.hashPrevBlock.SetNull();
     genesis.hashMerkleRoot = BlockMerkleRoot(genesis);
-    genesis.hashStateRoot = uint256(h256Touint(dev::h256("0xfc10eca6044384ee3ce137f48eea07ddc4b3fa50d13851feed05ffc23ba8bf1f"))); // qtum
+    genesis.hashStateRoot = uint256(h256Touint(dev::h256("0x4aa2fc62b681d55de473574cfb37ea1f58669f1869b2fcdf20de7969d037ea4a"))); // qtum
     genesis.hashUTXORoot = uint256(h256Touint(dev::sha3(dev::rlp("")))); // qtum
     return genesis;
 }
@@ -139,7 +139,7 @@ public:
         consensus.nPowTargetTimespanV2 = 4000;
         consensus.nRBTPowTargetTimespan = 1000;
         consensus.nPowTargetSpacing = 2 * 64;
-        consensus.nRBTPowTargetSpacing = 32;
+        consensus.nRBTPowTargetSpacing = 15;
         consensus.fPowAllowMinDifficultyBlocks = false;
         consensus.fPowNoRetargeting = true;
         consensus.fPoSNoRetargeting = false;
@@ -175,10 +175,10 @@ public:
         m_assumed_blockchain_size = 18;
         m_assumed_chain_state_size = 1;
 
-        genesis = CreateGenesisBlock(1504695029, 517218, 0x1f00ffff, 1, 50 * COIN);
+        genesis = CreateGenesisBlock(1504695029, 612759, 0x1f00ffff, 1, 50 * COIN);
         consensus.hashGenesisBlock = genesis.GetHash();
 
-        assert(consensus.hashGenesisBlock == uint256S("0x00003344a4fd0c6367d9124fc17fe182c6edf2aeb93244564e9acd7ab970959a"));
+        assert(consensus.hashGenesisBlock == uint256S("0x0000426c02a3f5c5c4be497837608799d9988a8f1380ad96494bc669118656ed"));
         assert(genesis.hashMerkleRoot == uint256S("0xed34050eb5909ee535fcb07af292ea55f3d2f291187617b44d3282231405b96d"));
 
         // Note that of those which support the service bits prefix, most only support a subset of
@@ -215,7 +215,7 @@ public:
 
         checkpointData = {
             {
-                { 0, uint256S("0x00003344a4fd0c6367d9124fc17fe182c6edf2aeb93244564e9acd7ab970959a")},
+                { 0, uint256S("0x0000426c02a3f5c5c4be497837608799d9988a8f1380ad96494bc669118656ed")},
             }
         };
 
@@ -236,7 +236,7 @@ public:
         consensus.nRBTCoinbaseMaturity = consensus.nBlocktimeDownscaleFactor*500;
         consensus.nSubsidyHalvingIntervalV2 = consensus.nBlocktimeDownscaleFactor*985500; // qtum halving every 4 years (nSubsidyHalvingInterval * nBlocktimeDownscaleFactor)
 
-        consensus.nLastPOWBlock = 5000;
+        consensus.nLastPOWBlock = 40320;
         consensus.nLastBigReward = 5000;
         consensus.nMPoSRewardRecipients = 10;
         consensus.nFirstMPoSBlock = consensus.nLastPOWBlock + 
@@ -292,7 +292,7 @@ public:
         consensus.nPowTargetTimespanV2 = 4000;
         consensus.nRBTPowTargetTimespan = 1000;
         consensus.nPowTargetSpacing = 2 * 64;
-        consensus.nRBTPowTargetSpacing = 32;
+        consensus.nRBTPowTargetSpacing = 15;
         consensus.fPowAllowMinDifficultyBlocks = false;
         consensus.fPowNoRetargeting = true;
         consensus.fPoSNoRetargeting = false;
@@ -323,10 +323,10 @@ public:
         m_assumed_blockchain_size = 8;
         m_assumed_chain_state_size = 1;
 
-
-        genesis = CreateGenesisBlock(1504695029, 517218, 0x1f00ffff, 1, 50 * COIN);
+        genesis = CreateGenesisBlock(1504695029, 612759, 0x1f00ffff, 1, 50 * COIN);
         consensus.hashGenesisBlock = genesis.GetHash();
-        assert(consensus.hashGenesisBlock == uint256S("0x00003344a4fd0c6367d9124fc17fe182c6edf2aeb93244564e9acd7ab970959a"));
+
+        assert(consensus.hashGenesisBlock == uint256S("0x0000426c02a3f5c5c4be497837608799d9988a8f1380ad96494bc669118656ed"));
         assert(genesis.hashMerkleRoot == uint256S("0xed34050eb5909ee535fcb07af292ea55f3d2f291187617b44d3282231405b96d"));
 
         vFixedSeeds.clear();
@@ -361,7 +361,7 @@ public:
 
         checkpointData = {
             {
-                {0, uint256S("0x00003344a4fd0c6367d9124fc17fe182c6edf2aeb93244564e9acd7ab970959a")},
+                {0, uint256S("0x0000426c02a3f5c5c4be497837608799d9988a8f1380ad96494bc669118656ed")},
             }
         };
 
@@ -381,7 +381,7 @@ public:
         consensus.nRBTCoinbaseMaturity = consensus.nBlocktimeDownscaleFactor*500;
         consensus.nSubsidyHalvingIntervalV2 = consensus.nBlocktimeDownscaleFactor*985500; // qtum halving every 4 years (nSubsidyHalvingInterval * nBlocktimeDownscaleFactor)
 
-        consensus.nLastPOWBlock = 8000;
+        consensus.nLastPOWBlock = 40320;
         consensus.nLastBigReward = 2000;
         consensus.nMPoSRewardRecipients = 10;
         consensus.nFirstMPoSBlock = consensus.nLastPOWBlock + 
@@ -474,7 +474,7 @@ public:
         consensus.nPowTargetTimespanV2 = 4000;
         consensus.nRBTPowTargetTimespan = 1000;
         consensus.nPowTargetSpacing = 2 * 64;
-        consensus.nRBTPowTargetSpacing = 32;
+        consensus.nRBTPowTargetSpacing = 15;
         consensus.fPowAllowMinDifficultyBlocks = false;
         consensus.fPowNoRetargeting = true;
         consensus.fPoSNoRetargeting = false;
@@ -501,10 +501,10 @@ public:
         nDefaultPort = 33888;
         nPruneAfterHeight = 1000;
 
-        genesis = CreateGenesisBlock(1623662135, 515925, 0x1f00ffff, 1, 50 * COIN);
+        genesis = CreateGenesisBlock(1623662135, 579484, 0x1f00ffff, 1, 50 * COIN);
         consensus.hashGenesisBlock = genesis.GetHash();
 
-        assert(consensus.hashGenesisBlock == uint256S("0x000061f1a8f5a2973280e4196d075309374e66669826435bfa745cf7695fc22d"));
+        assert(consensus.hashGenesisBlock == uint256S("0x000090266be11584c769aeb8dcd30dfeb6babb72e9af875a50c183836cc487ad"));
         assert(genesis.hashMerkleRoot == uint256S("0xed34050eb5909ee535fcb07af292ea55f3d2f291187617b44d3282231405b96d"));
 
         vFixedSeeds.clear();
@@ -582,7 +582,7 @@ public:
         consensus.nPowTargetTimespanV2 = 4000;
         consensus.nRBTPowTargetTimespan = 1000;
         consensus.nPowTargetSpacing = 2 * 64;
-        consensus.nRBTPowTargetSpacing = 32;
+        consensus.nRBTPowTargetSpacing = 15;
         consensus.fPowAllowMinDifficultyBlocks = true;
         consensus.fPowNoRetargeting = true;
         consensus.fPoSNoRetargeting = true;
@@ -616,7 +616,7 @@ public:
         genesis = CreateGenesisBlock(1504695029, 500000, 0x207fffff, 1, 50 * COIN);
         consensus.hashGenesisBlock = genesis.GetHash();
 
-        assert(consensus.hashGenesisBlock == uint256S("0x14563671c8cfec713fdb3e3d7d678cd61adf816f6ea3a2a89a44deb9738077b3"));
+        assert(consensus.hashGenesisBlock == uint256S("0x07752c431670626e22c952bef9992f9805b85b60c6b8f789465c19af5312effd"));
         assert(genesis.hashMerkleRoot == uint256S("0xed34050eb5909ee535fcb07af292ea55f3d2f291187617b44d3282231405b96d"));
 
         vFixedSeeds.clear(); //!< Regtest mode doesn't have any fixed seeds.
@@ -632,7 +632,7 @@ public:
 
         checkpointData = {
             {
-                {0, uint256S("0x14563671c8cfec713fdb3e3d7d678cd61adf816f6ea3a2a89a44deb9738077b3")},
+                {0, uint256S("0x07752c431670626e22c952bef9992f9805b85b60c6b8f789465c19af5312effd")},
             }
         };
 
@@ -901,7 +901,7 @@ void CChainParams::UpdateDifficultyChangeBlockHeight(int nHeight)
     consensus.fPowAllowMinDifficultyBlocks = false;
     consensus.fPowNoRetargeting = true;
     consensus.fPoSNoRetargeting = false;
-    consensus.nLastPOWBlock = 5000;
+    consensus.nLastPOWBlock = 40320;
     consensus.nMPoSRewardRecipients = 10;
     consensus.nFirstMPoSBlock = consensus.nLastPOWBlock + 
                                 consensus.nMPoSRewardRecipients + 

@@ -422,6 +422,8 @@ void QtumState::deploySupplyControl () {
     if(!QtumState::addressInUse(supplyControlAddress)){
         QtumState::createContract(supplyControlAddress);
         QtumState::setCode(supplyControlAddress, bytes{fromHex(supplyControlCode)}, QtumState::version(supplyControlAddress));
+        dev::u256 constexpr contractData = 0x0000000000000000000000000000000000000000000000000000000000000881;
+        QtumState::setStorage(supplyControlAddress, dev::u256(1), contractData);
         commit(CommitBehaviour::RemoveEmptyAccounts);
         db().commit();
     }
