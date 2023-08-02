@@ -127,7 +127,9 @@ public:
     void UpdateConstantinopleBlockHeight(int nHeight);
     void UpdateDifficultyChangeBlockHeight(int nHeight);
     void UpdateOfflineStakingBlockHeight(int nHeight);
+    void UpdateSupplyControlBlockHeight(int nHeight);
     void UpdateDelegationsAddress(const uint160& address);
+    void UpdateSupplyControlAddress(const uint160& address);
     void UpdateMinerListAddress(const uint160& address);
     void UpdateLastMPoSBlockHeight(int nHeight);
     void UpdateReduceBlocktimeHeight(int nHeight);
@@ -215,9 +217,19 @@ void UpdateDifficultyChangeBlockHeight(int nHeight);
 void UpdateOfflineStakingBlockHeight(int nHeight);
 
 /**
+ * Allows modifying the supply control block height regtest parameter.
+ */
+void UpdateSupplyControlBlockHeight(int nHeight);
+
+/**
  * Allows modifying the delegations address regtest parameter.
  */
 void UpdateDelegationsAddress(const uint160& address);
+
+/**
+ * Allows modifying the supply control address regtest parameter
+ */
+void UpdateSupplyControlAddress(const uint160& address);
 
 /**
  * Allows modifying the miner list contract address regtest parameter.

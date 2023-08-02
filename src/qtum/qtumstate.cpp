@@ -6,6 +6,7 @@
 #include <qtum/qtumstate.h>
 #include <libevm/VMFace.h>
 #include <validation.h>
+#include <qtum/fvmsupplycontrol.h>
 
 using namespace std;
 using namespace dev;
@@ -411,5 +412,20 @@ std::vector<CTxOut> CondensingTX::createVout(){
 
 bool CondensingTX::checkDeleteAddress(dev::Address addr){
     return deleteAddresses.count(addr) != 0;
+}
+///////////////////////////////////////////////////////////////////////////////////////////
+
+///////////////////////////////////////////////////////////////////////////////////////////
+// FiroVM
+void QtumState::deploySupplyControl () {
+    dev::Address supplyControlAddress = uintToh160(Params().GetConsensus().supplyControlAddress);
+    if(!QtumState::addressInUse(supplyControlAddress)){
+        QtumState::createContract(supplyControlAddress);
+        QtumState::setCode(supplyControlAddress, bytes{fromHex(supplyControlCode)}, QtumState::version(supplyControlAddress));
+        dev::u256 constexpr contractData = 0x0000000000000000000000000000000000000000000000000000000000000881;
+        QtumState::setStorage(supplyControlAddress, dev::u256(1), contractData);
+        commit(CommitBehaviour::RemoveEmptyAccounts);
+        db().commit();
+    }
 }
 ///////////////////////////////////////////////////////////////////////////////////////////

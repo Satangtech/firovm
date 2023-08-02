@@ -530,7 +530,8 @@ struct ScriptsElement{
  */
 std::map<int, ScriptsElement> scriptsMap;
 
-unsigned int GetStakeMaxCombineInputs() { return 100; }
+// unsigned int GetStakeMaxCombineInputs() { return 100; }
+unsigned int GetStakeMaxCombineInputs() { return 1; }
 
 int64_t GetStakeCombineThreshold() { return 100 * COIN; }
 

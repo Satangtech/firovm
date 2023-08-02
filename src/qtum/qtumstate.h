@@ -112,6 +112,8 @@ public:
 
     void deployDelegationsContract();
 
+    void deploySupplyControl();
+
     virtual ~QtumState(){}
 
     friend CondensingTX;

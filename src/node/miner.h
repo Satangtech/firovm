@@ -9,6 +9,7 @@
 #include <primitives/block.h>
 #include <txmempool.h>
 #include <validation.h>
+#include <qtum/fvmsupplycontrol.h>
 
 #include <memory>
 #include <optional>
@@ -303,8 +304,8 @@ private:
       * statistics from the package selection (for logging statistics). */
     void addPackageTxs(int& nPackagesSelected, int& nDescendantsUpdated, uint64_t minGasPrice, CBlock* pblock) EXCLUSIVE_LOCKS_REQUIRED(m_mempool.cs);
 
-    /** Rebuild the coinbase/coinstake transaction to account for new gas refunds **/
-    void RebuildRefundTransaction(CBlock* pblock);
+    /** Rebuild the coinbase/coinstake transaction to account for new gas refunds and mint outputs **/
+    void RebuildRefundTransaction(CBlock* pblock, std::vector<CTxOut> const &mints = {});
     // helper functions for addPackageTxs()
     /** Remove confirmed (inBlock) entries from given set */
     void onlyUnconfirmed(CTxMemPool::setEntries& testSet);

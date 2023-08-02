@@ -18,6 +18,7 @@
 #include <policy/policy.h>
 #include <pow.h>
 #include <pos.h>
+#include <supplycontrol.h>
 #include <primitives/transaction.h>
 #include <timedata.h>
 #include <util/moneystr.h>
@@ -153,7 +154,7 @@ void BlockAssembler::resetBlock()
     nFees = 0;
 }
 
-void BlockAssembler::RebuildRefundTransaction(CBlock* pblock){
+void BlockAssembler::RebuildRefundTransaction(CBlock* pblock, std::vector<CTxOut> const &mints){
     int refundtx=0; //0 for coinbase in PoW
     if(pblock->IsProofOfStake()){
         refundtx=1; //1 for coinstake in PoS
@@ -163,7 +164,15 @@ void BlockAssembler::RebuildRefundTransaction(CBlock* pblock){
     contrTx.vout[refundtx].nValue -= bceResult.refundSender;
     //note, this will need changed for MPoS
     int i=contrTx.vout.size();
-    contrTx.vout.resize(contrTx.vout.size()+bceResult.refundOutputs.size());
+    contrTx.vout.resize(contrTx.vout.size()
+        + mints.size()
+        + bceResult.refundOutputs.size());
+
+    for(auto const &vout : mints){
+        contrTx.vout[i]=vout;
+        i++;
+    }
+
     for(CTxOut& vout : bceResult.refundOutputs){
         contrTx.vout[i]=vout;
         i++;
@@ -295,6 +304,11 @@ std::unique_ptr<CBlockTemplate> BlockAssembler::CreateNewBlock(const CScript& sc
         globalState->deployDelegationsContract();
     }
     /////////////////////////////////////////////////
+    ////////////////////////////////////////////////// deploy supply control contract
+    if(nHeight == chainparams.GetConsensus().nSupplyControlHeight){
+        globalState->deploySupplyControl();
+    }
+    /////////////////////////////////////////////////
     int nPackagesSelected = 0;
     int nDescendantsUpdated = 0;
     addPackageTxs(nPackagesSelected, nDescendantsUpdated, minGasPrice, pblock);
@@ -303,9 +317,14 @@ std::unique_ptr<CBlockTemplate> BlockAssembler::CreateNewBlock(const CScript& sc
     globalState->setRoot(oldHashStateRoot);
     globalState->setRootUTXO(oldHashUTXORoot);
 
+    std::vector<CTxOut> mints;
+    if(nHeight > chainparams.GetConsensus().nSupplyControlHeight){
+        GetSupplyControlOutputs(nHeight, mints, m_chainstate);
+    }
+
     //this should already be populated by AddBlock in case of contracts, but if no contracts
     //then it won't get populated
-    RebuildRefundTransaction(pblock);
+    RebuildRefundTransaction(pblock, mints);
     ////////////////////////////////////////////////////////
 
     pblocktemplate->vchCoinbaseCommitment = GenerateCoinbaseCommitment(*pblock, pindexPrev, chainparams.GetConsensus(), fProofOfStake);
@@ -423,7 +442,12 @@ std::unique_ptr<CBlockTemplate> BlockAssembler::CreateEmptyBlock(const CScript& 
     pblock->hashStateRoot = uint256(h256Touint(dev::h256(globalState->rootHash())));
     pblock->hashUTXORoot = uint256(h256Touint(dev::h256(globalState->rootHashUTXO())));
 
-    RebuildRefundTransaction(pblock);
+    std::vector<CTxOut> mints;
+    if (nHeight > Params().GetConsensus().nSupplyControlHeight) {
+        GetSupplyControlOutputs(nHeight, mints, m_chainstate);
+    }
+
+    RebuildRefundTransaction(pblock, mints);
     ////////////////////////////////////////////////////////
 
     pblocktemplate->vchCoinbaseCommitment = GenerateCoinbaseCommitment(*pblock, pindexPrev, chainparams.GetConsensus(), fProofOfStake);
@@ -629,7 +653,11 @@ bool BlockAssembler::AttemptToAddContractToBlock(CTxMemPool::txiter iter, uint64
     }
     //calculate sigops from new refund/proof tx
     this->nBlockSigOpsCost -= GetLegacySigOpCount(*pblock->vtx[proofTx]);
-    RebuildRefundTransaction(pblock);
+    std::vector<CTxOut> mints;
+    if (nHeight > Params().GetConsensus().nSupplyControlHeight) {
+        GetSupplyControlOutputs(nHeight, mints, m_chainstate);
+    }
+    RebuildRefundTransaction(pblock, mints);
     this->nBlockSigOpsCost += GetLegacySigOpCount(*pblock->vtx[proofTx]);
 
     bceResult.valueTransfers.clear();

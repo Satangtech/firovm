@@ -42,12 +42,12 @@ static CBlock CreateGenesisBlock(const char* pszTimestamp, const CScript& genesi
     genesis.vtx.push_back(MakeTransactionRef(std::move(txNew)));
     genesis.hashPrevBlock.SetNull();
     genesis.hashMerkleRoot = BlockMerkleRoot(genesis);
-    genesis.hashStateRoot = uint256(h256Touint(dev::h256("0xfc10eca6044384ee3ce137f48eea07ddc4b3fa50d13851feed05ffc23ba8bf1f"))); // qtum
+    genesis.hashStateRoot = uint256(h256Touint(dev::h256("0x4aa2fc62b681d55de473574cfb37ea1f58669f1869b2fcdf20de7969d037ea4a"))); // qtum
     genesis.hashUTXORoot = uint256(h256Touint(dev::sha3(dev::rlp("")))); // qtum
     return genesis;
 }
 
-#if 0
+#ifdef MINE_GENESIS
 static void MineGenesis(CBlockHeader& genesisBlock, const uint256& powLimit, bool noProduction)
 {
     if(noProduction)
@@ -119,17 +119,18 @@ public:
         consensus.BIP34Hash = uint256S("0x000075aef83cf2853580f8ae8ce6f8c3096cfa21d98334d6e3f95e5582ed986c");
         consensus.BIP65Height = 0; // 000000000000000004c2b624ed5d7756c508d90fd0da2c7c679febfa6c4735f0
         consensus.BIP66Height = 0; // 00000000000000000379eaa19dce8c9b722d46ae6a57c2f1a988119488b50931
-        consensus.CSVHeight = 6048; // 000000000000000004a1b34462cb8aeebd5799177f7a29cf28f2d1961716b5b5
-        consensus.SegwitHeight = 6048; // 0000000000000000001c8018d9cb3b742ef25114f27563e3fc4a1902167f9893
-        consensus.MinBIP9WarningHeight = 8064; // segwit activation height + miner confirmation window
-        consensus.QIP5Height = 466600;
-        consensus.QIP6Height = 466600;
-        consensus.QIP7Height = 466600;
-        consensus.QIP9Height = 466600;
-        consensus.nOfflineStakeHeight = 680000;
-        consensus.nReduceBlocktimeHeight = 845000;
-        consensus.nMuirGlacierHeight = 845000;
-        consensus.nLondonHeight = 2080512;
+        consensus.CSVHeight = 1; // 000000000000000004a1b34462cb8aeebd5799177f7a29cf28f2d1961716b5b5
+        consensus.SegwitHeight = 1; // 0000000000000000001c8018d9cb3b742ef25114f27563e3fc4a1902167f9893
+        consensus.MinBIP9WarningHeight = 1; // segwit activation height + miner confirmation window
+        consensus.QIP5Height = 1;
+        consensus.QIP6Height = 1;
+        consensus.QIP7Height = 1;
+        consensus.QIP9Height = 1;
+        consensus.nOfflineStakeHeight = 1;
+        consensus.nSupplyControlHeight = 1;
+        consensus.nReduceBlocktimeHeight = 1;
+        consensus.nMuirGlacierHeight = 1;
+        consensus.nLondonHeight = 1;
         consensus.powLimit = uint256S("0000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
         consensus.posLimit = uint256S("00000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
         consensus.QIP9PosLimit = uint256S("0000000000001fffffffffffffffffffffffffffffffffffffffffffffffffff"); // The new POS-limit activated after QIP9
@@ -138,7 +139,7 @@ public:
         consensus.nPowTargetTimespanV2 = 4000;
         consensus.nRBTPowTargetTimespan = 1000;
         consensus.nPowTargetSpacing = 2 * 64;
-        consensus.nRBTPowTargetSpacing = 32;
+        consensus.nRBTPowTargetSpacing = 15;
         consensus.fPowAllowMinDifficultyBlocks = false;
         consensus.fPowNoRetargeting = true;
         consensus.fPoSNoRetargeting = false;
@@ -174,10 +175,11 @@ public:
         m_assumed_blockchain_size = 18;
         m_assumed_chain_state_size = 1;
 
-        genesis = CreateGenesisBlock(1504695029, 326737, 0x1f00ffff, 1, 50 * COIN);
+        genesis = CreateGenesisBlock(1504695029, 612759, 0x1f00ffff, 1, 50 * COIN);
         consensus.hashGenesisBlock = genesis.GetHash();
-        //assert(consensus.hashGenesisBlock == uint256S("0x0000b8c1261a3c63b5b6f65b87f735c5cdf65c895e805d18955271d2073ad539"));
-        //assert(genesis.hashMerkleRoot == uint256S("0xed34050eb5909ee535fcb07af292ea55f3d2f291187617b44d3282231405b96d"));
+
+        assert(consensus.hashGenesisBlock == uint256S("0x0000426c02a3f5c5c4be497837608799d9988a8f1380ad96494bc669118656ed"));
+        assert(genesis.hashMerkleRoot == uint256S("0xed34050eb5909ee535fcb07af292ea55f3d2f291187617b44d3282231405b96d"));
 
         // Note that of those which support the service bits prefix, most only support a subset of
         // possible options.
@@ -213,7 +215,7 @@ public:
 
         checkpointData = {
             {
-                { 0, uint256S("0x0000b8c1261a3c63b5b6f65b87f735c5cdf65c895e805d18955271d2073ad539")},
+                { 0, uint256S("0x0000426c02a3f5c5c4be497837608799d9988a8f1380ad96494bc669118656ed")},
             }
         };
 
@@ -234,13 +236,13 @@ public:
         consensus.nRBTCoinbaseMaturity = consensus.nBlocktimeDownscaleFactor*500;
         consensus.nSubsidyHalvingIntervalV2 = consensus.nBlocktimeDownscaleFactor*985500; // qtum halving every 4 years (nSubsidyHalvingInterval * nBlocktimeDownscaleFactor)
 
-        consensus.nLastPOWBlock = 5000;
+        consensus.nLastPOWBlock = 40320;
         consensus.nLastBigReward = 5000;
         consensus.nMPoSRewardRecipients = 10;
         consensus.nFirstMPoSBlock = consensus.nLastPOWBlock + 
                                     consensus.nMPoSRewardRecipients + 
                                     consensus.nCoinbaseMaturity;
-        consensus.nLastMPoSBlock = 679999;
+        consensus.nLastMPoSBlock = 0;
 
 
         consensus.nFixUTXOCacheHFHeight = 100000;
@@ -248,6 +250,7 @@ public:
         consensus.nCheckpointSpan = consensus.nCoinbaseMaturity;
         consensus.nRBTCheckpointSpan = consensus.nRBTCoinbaseMaturity;
         consensus.delegationsAddress = uint160(ParseHex("0000000000000000000000000000000000000086")); // Delegations contract for offline staking
+        consensus.supplyControlAddress = uint160(ParseHex("0000000000000000000000000000000000000882"));
         consensus.minerListAddress = uint160(ParseHex("0000000000000000000000000000000000000880"));
         consensus.nStakeTimestampMask = 15;
         consensus.nRBTStakeTimestampMask = 3;
@@ -277,6 +280,7 @@ public:
         consensus.QIP7Height = 0;
         consensus.QIP9Height = 0;
         consensus.nOfflineStakeHeight = 1;
+        consensus.nSupplyControlHeight = 10;
         consensus.nReduceBlocktimeHeight = 0;
         consensus.nMuirGlacierHeight = 0;
         consensus.nLondonHeight = 0;
@@ -288,7 +292,7 @@ public:
         consensus.nPowTargetTimespanV2 = 4000;
         consensus.nRBTPowTargetTimespan = 1000;
         consensus.nPowTargetSpacing = 2 * 64;
-        consensus.nRBTPowTargetSpacing = 32;
+        consensus.nRBTPowTargetSpacing = 15;
         consensus.fPowAllowMinDifficultyBlocks = false;
         consensus.fPowNoRetargeting = true;
         consensus.fPoSNoRetargeting = false;
@@ -319,24 +323,24 @@ public:
         m_assumed_blockchain_size = 8;
         m_assumed_chain_state_size = 1;
 
-
-        genesis = CreateGenesisBlock(1504695029, 517218, 0x1f00ffff, 1, 50 * COIN);
+        genesis = CreateGenesisBlock(1504695029, 612759, 0x1f00ffff, 1, 50 * COIN);
         consensus.hashGenesisBlock = genesis.GetHash();
-        assert(consensus.hashGenesisBlock == uint256S("0x00003344a4fd0c6367d9124fc17fe182c6edf2aeb93244564e9acd7ab970959a"));
+
+        assert(consensus.hashGenesisBlock == uint256S("0x0000426c02a3f5c5c4be497837608799d9988a8f1380ad96494bc669118656ed"));
         assert(genesis.hashMerkleRoot == uint256S("0xed34050eb5909ee535fcb07af292ea55f3d2f291187617b44d3282231405b96d"));
 
         vFixedSeeds.clear();
         vSeeds.clear();
         // nodes with support for servicebits filtering should be at the top
-        vSeeds.emplace_back("amsterdam.test.fvm.firo.org");
-        vSeeds.emplace_back("australia.test.fvm.firo.org");
-        vSeeds.emplace_back("chicago.test.fvm.firo.org");
-        vSeeds.emplace_back("london.test.fvm.firo.org");
-        vSeeds.emplace_back("frankfurt.test.fvm.firo.org");
-        vSeeds.emplace_back("newjersey.test.fvm.firo.org");
-        vSeeds.emplace_back("sanfrancisco.test.fvm.firo.org");
-        vSeeds.emplace_back("tokyo.test.fvm.firo.org");
-        vSeeds.emplace_back("singapore.test.fvm.firo.org");
+        // vSeeds.emplace_back("amsterdam.test.fvm.firo.org");
+        // vSeeds.emplace_back("australia.test.fvm.firo.org");
+        // vSeeds.emplace_back("chicago.test.fvm.firo.org");
+        // vSeeds.emplace_back("london.test.fvm.firo.org");
+        // vSeeds.emplace_back("frankfurt.test.fvm.firo.org");
+        // vSeeds.emplace_back("newjersey.test.fvm.firo.org");
+        // vSeeds.emplace_back("sanfrancisco.test.fvm.firo.org");
+        // vSeeds.emplace_back("tokyo.test.fvm.firo.org");
+        // vSeeds.emplace_back("singapore.test.fvm.firo.org");
 
         base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1,65);
         base58Prefixes[SCRIPT_ADDRESS] = std::vector<unsigned char>(1,178);
@@ -357,7 +361,7 @@ public:
 
         checkpointData = {
             {
-                {0, uint256S("0x00003344a4fd0c6367d9124fc17fe182c6edf2aeb93244564e9acd7ab970959a")},
+                {0, uint256S("0x0000426c02a3f5c5c4be497837608799d9988a8f1380ad96494bc669118656ed")},
             }
         };
 
@@ -377,19 +381,20 @@ public:
         consensus.nRBTCoinbaseMaturity = consensus.nBlocktimeDownscaleFactor*500;
         consensus.nSubsidyHalvingIntervalV2 = consensus.nBlocktimeDownscaleFactor*985500; // qtum halving every 4 years (nSubsidyHalvingInterval * nBlocktimeDownscaleFactor)
 
-        consensus.nLastPOWBlock = 8000;
+        consensus.nLastPOWBlock = 40320;
         consensus.nLastBigReward = 2000;
         consensus.nMPoSRewardRecipients = 10;
         consensus.nFirstMPoSBlock = consensus.nLastPOWBlock + 
                                     consensus.nMPoSRewardRecipients + 
                                     consensus.nCoinbaseMaturity;
-        consensus.nLastMPoSBlock = 624999;
+        consensus.nLastMPoSBlock = 0;
 
         consensus.nFixUTXOCacheHFHeight = 84500;
         consensus.nEnableHeaderSignatureHeight = 391993;
         consensus.nCheckpointSpan = consensus.nCoinbaseMaturity;
         consensus.nRBTCheckpointSpan = consensus.nRBTCoinbaseMaturity;
         consensus.delegationsAddress = uint160(ParseHex("0000000000000000000000000000000000000086")); // Delegations contract for offline staking
+        consensus.supplyControlAddress = uint160(ParseHex("0000000000000000000000000000000000000882"));
         consensus.minerListAddress = uint160(ParseHex("0000000000000000000000000000000000000880"));
         consensus.nStakeTimestampMask = 15;
         consensus.nRBTStakeTimestampMask = 3;
@@ -457,6 +462,7 @@ public:
         consensus.QIP7Height = 0;
         consensus.QIP9Height = 0;
         consensus.nOfflineStakeHeight = 1;
+        consensus.nSupplyControlHeight = 1;
         consensus.nReduceBlocktimeHeight = 0;
         consensus.nMuirGlacierHeight = 0;
         consensus.nLondonHeight = 0;
@@ -468,7 +474,7 @@ public:
         consensus.nPowTargetTimespanV2 = 4000;
         consensus.nRBTPowTargetTimespan = 1000;
         consensus.nPowTargetSpacing = 2 * 64;
-        consensus.nRBTPowTargetSpacing = 32;
+        consensus.nRBTPowTargetSpacing = 15;
         consensus.fPowAllowMinDifficultyBlocks = false;
         consensus.fPowNoRetargeting = true;
         consensus.fPoSNoRetargeting = false;
@@ -495,10 +501,11 @@ public:
         nDefaultPort = 33888;
         nPruneAfterHeight = 1000;
 
-        genesis = CreateGenesisBlock(1623662135, 572184, 0x1f00ffff, 1, 50 * COIN);
+        genesis = CreateGenesisBlock(1623662135, 579484, 0x1f00ffff, 1, 50 * COIN);
         consensus.hashGenesisBlock = genesis.GetHash();
-        //assert(consensus.hashGenesisBlock == uint256S("0x0000e3969af231f6d87776e6fb22efb4fa51d0bc2e6fb3438dabae883260afde"));
-        //assert(genesis.hashMerkleRoot == uint256S("0xed34050eb5909ee535fcb07af292ea55f3d2f291187617b44d3282231405b96d"));
+
+        assert(consensus.hashGenesisBlock == uint256S("0x000090266be11584c769aeb8dcd30dfeb6babb72e9af875a50c183836cc487ad"));
+        assert(genesis.hashMerkleRoot == uint256S("0xed34050eb5909ee535fcb07af292ea55f3d2f291187617b44d3282231405b96d"));
 
         vFixedSeeds.clear();
 
@@ -532,6 +539,7 @@ public:
         consensus.nCheckpointSpan = consensus.nCoinbaseMaturity;
         consensus.nRBTCheckpointSpan = consensus.nRBTCoinbaseMaturity;
         consensus.delegationsAddress = uint160(ParseHex("0000000000000000000000000000000000000086")); // Delegations contract for offline staking
+        consensus.supplyControlAddress = uint160(ParseHex("0000000000000000000000000000000000000882"));
         consensus.minerListAddress = uint160(ParseHex("0000000000000000000000000000000000000880"));
         consensus.nStakeTimestampMask = 15;
         consensus.nRBTStakeTimestampMask = 3;
@@ -562,6 +570,7 @@ public:
         consensus.QIP7Height = 0;
         consensus.QIP9Height = 0;
         consensus.nOfflineStakeHeight = 1;
+        consensus.nSupplyControlHeight = 1;
         consensus.nReduceBlocktimeHeight = 0;
         consensus.nMuirGlacierHeight = 0;
         consensus.nLondonHeight = 0;
@@ -573,7 +582,7 @@ public:
         consensus.nPowTargetTimespanV2 = 4000;
         consensus.nRBTPowTargetTimespan = 1000;
         consensus.nPowTargetSpacing = 2 * 64;
-        consensus.nRBTPowTargetSpacing = 32;
+        consensus.nRBTPowTargetSpacing = 15;
         consensus.fPowAllowMinDifficultyBlocks = true;
         consensus.fPowNoRetargeting = true;
         consensus.fPoSNoRetargeting = true;
@@ -606,8 +615,9 @@ public:
 
         genesis = CreateGenesisBlock(1504695029, 500000, 0x207fffff, 1, 50 * COIN);
         consensus.hashGenesisBlock = genesis.GetHash();
-        //assert(consensus.hashGenesisBlock == uint256S("0x4d5165390707161590c19a07bc5fbeb6eaa6cd9a461e7c4c882249b13ff1196e"));
-        //assert(genesis.hashMerkleRoot == uint256S("0xed34050eb5909ee535fcb07af292ea55f3d2f291187617b44d3282231405b96d"));
+
+        assert(consensus.hashGenesisBlock == uint256S("0x07752c431670626e22c952bef9992f9805b85b60c6b8f789465c19af5312effd"));
+        assert(genesis.hashMerkleRoot == uint256S("0xed34050eb5909ee535fcb07af292ea55f3d2f291187617b44d3282231405b96d"));
 
         vFixedSeeds.clear(); //!< Regtest mode doesn't have any fixed seeds.
         vSeeds.clear();
@@ -622,7 +632,7 @@ public:
 
         checkpointData = {
             {
-                {0, uint256S("3da7bea7fa8e410b019f7bafb19e03e0cc14433e04ef0df364e68bbb4ac2a620")},
+                {0, uint256S("0x07752c431670626e22c952bef9992f9805b85b60c6b8f789465c19af5312effd")},
             }
         };
 
@@ -653,6 +663,7 @@ public:
         consensus.nCheckpointSpan = consensus.nCoinbaseMaturity;
         consensus.nRBTCheckpointSpan = consensus.nRBTCoinbaseMaturity;
         consensus.delegationsAddress = uint160(ParseHex("0000000000000000000000000000000000000086")); // Delegations contract for offline staking
+        consensus.supplyControlAddress = uint160(ParseHex("0000000000000000000000000000000000000882"));
         consensus.minerListAddress = uint160(ParseHex("0000000000000000000000000000000000000880"));
         consensus.nStakeTimestampMask = 15;
         consensus.nRBTStakeTimestampMask = 3;
@@ -890,7 +901,7 @@ void CChainParams::UpdateDifficultyChangeBlockHeight(int nHeight)
     consensus.fPowAllowMinDifficultyBlocks = false;
     consensus.fPowNoRetargeting = true;
     consensus.fPoSNoRetargeting = false;
-    consensus.nLastPOWBlock = 5000;
+    consensus.nLastPOWBlock = 40320;
     consensus.nMPoSRewardRecipients = 10;
     consensus.nFirstMPoSBlock = consensus.nLastPOWBlock + 
                                 consensus.nMPoSRewardRecipients + 
@@ -913,6 +924,16 @@ void UpdateOfflineStakingBlockHeight(int nHeight)
     const_cast<CChainParams*>(globalChainParams.get())->UpdateOfflineStakingBlockHeight(nHeight);
 }
 
+void CChainParams::UpdateSupplyControlBlockHeight(int nHeight)
+{
+    consensus.nSupplyControlHeight = nHeight;
+}
+
+void UpdateSupplyControlBlockHeight(int nHeight)
+{
+    const_cast<CChainParams*>(globalChainParams.get())->UpdateSupplyControlBlockHeight(nHeight);
+}
+
 void CChainParams::UpdateDelegationsAddress(const uint160& address)
 {
     consensus.delegationsAddress = address;
@@ -921,6 +942,16 @@ void CChainParams::UpdateDelegationsAddress(const uint160& address)
 void UpdateDelegationsAddress(const uint160& address)
 {
     const_cast<CChainParams*>(globalChainParams.get())->UpdateDelegationsAddress(address);
+}
+
+void CChainParams::UpdateSupplyControlAddress(const uint160& address)
+{
+    consensus.supplyControlAddress = address;
+}
+
+void UpdateSupplyControlAddress(const uint160& address)
+{
+    const_cast<CChainParams*>(globalChainParams.get())->UpdateSupplyControlAddress(address);
 }
 
 void CChainParams::UpdateMinerListAddress(const uint160& address)
