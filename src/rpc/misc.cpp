@@ -429,7 +429,7 @@ RPCHelpMan getaddressbalance()
             // POW DO
             if (it->first.txindex == 0 ){
                 if(  ((nHeight - it->first.blockHeight) < Params().GetConsensus().CoinbaseMaturity(nHeight)) ){
-                     immature += it->second; //immature stake outputs
+                     immature += it->second; //immature block reward outputs
                 } else {
                      balance += it->second;
                 }
