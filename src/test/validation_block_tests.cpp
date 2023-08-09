@@ -147,7 +147,7 @@ void MinerTestingSetup::BuildChain(const uint256& root, int height, const unsign
     }
 }
 
-BOOST_AUTO_TEST_CASE(processnewblock_signals_ordering, * boost::unit_test::disabled())
+BOOST_AUTO_TEST_CASE(processnewblock_signals_ordering)
 {
     // build a large-ish chain that's likely to have some forks
     std::vector<std::shared_ptr<const CBlock>> blocks;

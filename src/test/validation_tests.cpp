@@ -17,6 +17,9 @@ BOOST_FIXTURE_TEST_SUITE(validation_tests, TestingSetup)
 
 static void TestBlockSubsidyHalvings(const Consensus::Params& consensusParams)
 {
+    BOOST_CHECK_EQUAL(GetBlockSubsidy(1, consensusParams), 20000 * COIN);
+    BOOST_CHECK_EQUAL(GetBlockSubsidy(2, consensusParams), 0);
+
     int maxHalvings = 7;
     CAmount nInitialSubsidy = 4 * COIN;
 
@@ -26,7 +29,7 @@ static void TestBlockSubsidyHalvings(const Consensus::Params& consensusParams)
         int nHeight = nHalvings * consensusParams.nSubsidyHalvingInterval + consensusParams.nLastBigReward + 1;
         CAmount nSubsidy = GetBlockSubsidy(nHeight, consensusParams);
         BOOST_CHECK(nSubsidy <= nInitialSubsidy);
-        BOOST_CHECK_EQUAL(nSubsidy, nPreviousSubsidy / 2);
+        BOOST_CHECK_EQUAL(nSubsidy, 0);
         nPreviousSubsidy = nSubsidy;
     }
     BOOST_CHECK_EQUAL(GetBlockSubsidy(maxHalvings * consensusParams.nSubsidyHalvingInterval + consensusParams.nLastBigReward + 1, consensusParams), 0);
