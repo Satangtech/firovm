@@ -330,7 +330,7 @@ BOOST_FIXTURE_TEST_CASE(package_submission_tests, TestChain100Setup)
 
 // Tests for packages containing transactions that have same-txid-different-witness equivalents in
 // the mempool.
-BOOST_FIXTURE_TEST_CASE(package_witness_swap_tests, TestChain100Setup, * boost::unit_test::disabled())
+BOOST_FIXTURE_TEST_CASE(package_witness_swap_tests, TestChain100Setup)
 {
     // Mine blocks to mature coinbases.
     mineBlocks(5);
