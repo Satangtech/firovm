@@ -240,12 +240,12 @@ class BitcoinTestFramework(metaclass=BitcoinTestMetaClass):
         fname_bitcoind = os.path.join(
             config["environment"]["BUILDDIR"],
             "src",
-            "qtumd" + config["environment"]["EXEEXT"],
+            "firovmd" + config["environment"]["EXEEXT"],
         )
         fname_bitcoincli = os.path.join(
             config["environment"]["BUILDDIR"],
             "src",
-            "qtum-cli" + config["environment"]["EXEEXT"],
+            "firovm-cli" + config["environment"]["EXEEXT"],
         )
         self.options.bitcoind = os.getenv("BITCOIND", default=fname_bitcoind)
         self.options.bitcoincli = os.getenv("BITCOINCLI", default=fname_bitcoincli)
