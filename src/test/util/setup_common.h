@@ -162,6 +162,15 @@ struct TestChain100Setup : public TestingSetup {
                                                       CAmount output_amount = CAmount(1 * COIN),
                                                       bool submit = true);
 
+    CMutableTransaction CreateManyOutputValidMempoolTransaction(CTransactionRef input_transaction,
+                                                      int input_vout,
+                                                      int input_height,
+                                                      CKey input_signing_key,
+                                                      int outputs,
+                                                      CScript output_destination,
+                                                      CAmount output_amount = CAmount(1 * COIN),
+                                                      bool submit = true);
+
     std::vector<CTransactionRef> m_coinbase_txns; // For convenience, coinbase transactions
     CKey coinbaseKey; // private/public key needed to spend coinbase transactions
 };
