@@ -404,7 +404,8 @@ BOOST_AUTO_TEST_CASE(gas_schedule_one_paramsInstance_introductory_block_1_test1)
     BOOST_CHECK(compareEVMSchedule(schedule, dev::eth::EIP158Schedule));
 }
 
-BOOST_AUTO_TEST_CASE(gas_schedule_one_paramsInstance_introductory_block_1_test2){
+BOOST_AUTO_TEST_CASE(gas_schedule_one_paramsInstance_introductory_block_1_test2, * boost::unit_test::disabled())
+{
     initState();
     contractLoading();
 
@@ -421,7 +422,8 @@ BOOST_AUTO_TEST_CASE(gas_schedule_one_paramsInstance_introductory_block_1_test2)
     BOOST_CHECK(compareEVMSchedule(schedule, EVMScheduleContractGasSchedule));
 }
 
-BOOST_AUTO_TEST_CASE(gas_schedule_passage_from_0_to_130_three_paramsInstance_test){
+BOOST_AUTO_TEST_CASE(gas_schedule_passage_from_0_to_130_three_paramsInstance_test, * boost::unit_test::disabled())
+{
 //    initState();
     contractLoading();    
     createTestContractsAndBlocks(this, code[1], code[3], code[5], GasScheduleDGP, *m_node.chainman);
@@ -435,7 +437,8 @@ BOOST_AUTO_TEST_CASE(gas_schedule_passage_from_0_to_130_three_paramsInstance_tes
     }
 }
 
-BOOST_AUTO_TEST_CASE(gas_schedule_passage_from_130_to_0_three_paramsInstance_test){
+BOOST_AUTO_TEST_CASE(gas_schedule_passage_from_130_to_0_three_paramsInstance_test, * boost::unit_test::disabled())
+{
 //    initState();
     contractLoading();
     

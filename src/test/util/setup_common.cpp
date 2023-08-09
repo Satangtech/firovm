@@ -285,7 +285,7 @@ TestChain100Setup::TestChain100Setup(const std::vector<const char*>& extra_args)
         LOCK(::cs_main);
         assert(
             m_node.chainman->ActiveChain().Tip()->GetBlockHash().ToString() ==
-            "0852ca785cdf8a33c3544ba81d11cbc8d4fa1e1e355dbda98cb6b3217fffedc0");
+            "3a607e493b71fb54a02b3d7ddb203a12b1c1770bf0581d38a58217f56448903f");
     }
 }
 

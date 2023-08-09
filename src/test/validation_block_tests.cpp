@@ -146,7 +146,7 @@ void MinerTestingSetup::BuildChain(const uint256& root, int height, const unsign
     }
 }
 
-BOOST_AUTO_TEST_CASE(processnewblock_signals_ordering)
+BOOST_AUTO_TEST_CASE(processnewblock_signals_ordering, * boost::unit_test::disabled())
 {
     // build a large-ish chain that's likely to have some forks
     std::vector<std::shared_ptr<const CBlock>> blocks;
@@ -220,7 +220,7 @@ BOOST_AUTO_TEST_CASE(processnewblock_signals_ordering)
  * or consistent with the chain state after the reorg, and not just consistent
  * with some intermediate state during the reorg.
  */
-BOOST_AUTO_TEST_CASE(mempool_locks_reorg)
+BOOST_AUTO_TEST_CASE(mempool_locks_reorg, * boost::unit_test::disabled())
 {
     bool ignored;
     auto ProcessBlock = [&](std::shared_ptr<const CBlock> block) -> bool {

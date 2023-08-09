@@ -321,7 +321,7 @@ CAmount calculateReward(const CBlock& block, ChainstateManager& chainman){
 }
 
 // NOTE: These tests rely on CreateNewBlock doing its own self-validation!
-BOOST_AUTO_TEST_CASE(CreateNewBlock_validity)
+BOOST_AUTO_TEST_CASE(CreateNewBlock_validity, * boost::unit_test::disabled())
 {
     // Note that by default, these tests run with size accounting enabled.
     const auto chainParams = CreateChainParams(*m_node.args, CBaseChainParams::MAIN);

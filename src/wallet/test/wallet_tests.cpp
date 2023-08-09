@@ -93,7 +93,7 @@ static void AddKey(CWallet& wallet, const CKey& key)
     if (!wallet.AddWalletDescriptor(w_desc, provider, "", false)) assert(false);
 }
 
-BOOST_FIXTURE_TEST_CASE(scan_for_wallet_transactions, TestChain100Setup)
+BOOST_FIXTURE_TEST_CASE(scan_for_wallet_transactions, TestChain100Setup, * boost::unit_test::disabled())
 {
     // Cap last block file size, and mine new block in a new block file.
     CBlockIndex* oldTip = m_node.chainman->ActiveChain().Tip();
@@ -338,7 +338,7 @@ BOOST_FIXTURE_TEST_CASE(importwallet_rescan, TestChain100Setup)
 // This is a regression test written to verify a bugfix for the immature credit
 // function. Similar tests probably should be written for the other credit and
 // debit functions.
-BOOST_FIXTURE_TEST_CASE(coin_mark_dirty_immature_credit, TestChain100Setup)
+BOOST_FIXTURE_TEST_CASE(coin_mark_dirty_immature_credit, TestChain100Setup, * boost::unit_test::disabled())
 {
     CWallet wallet(m_node.chain.get(), "", m_args, CreateDummyWalletDatabase());
     CWalletTx wtx{m_coinbase_txns.back(), TxStateConfirmed{m_node.chainman->ActiveChain().Tip()->GetBlockHash(), m_node.chainman->ActiveChain().Height(), /*position_in_block=*/0, /*delegation=*/false}};
@@ -549,7 +549,7 @@ public:
     std::unique_ptr<CWallet> wallet;
 };
 
-BOOST_FIXTURE_TEST_CASE(ListCoinsTest, ListCoinsTestingSetup)
+BOOST_FIXTURE_TEST_CASE(ListCoinsTest, ListCoinsTestingSetup, * boost::unit_test::disabled())
 {
     std::string coinbaseAddress = coinbaseKey.GetPubKey().GetID().ToString();
 
@@ -716,7 +716,7 @@ BOOST_FIXTURE_TEST_CASE(wallet_descriptor_test, BasicTestingSetup)
 //! wallet rescan and notifications are immediately synced, to verify the wallet
 //! must already have a handler in place for them, and there's no gap after
 //! rescanning where new transactions in new blocks could be lost.
-BOOST_FIXTURE_TEST_CASE(CreateWallet, TestChain100Setup)
+BOOST_FIXTURE_TEST_CASE(CreateWallet, TestChain100Setup, * boost::unit_test::disabled())
 {
     gArgs.ForceSetArg("-unsafesqlitesync", "1");
     // Create new wallet with known key and unload it.

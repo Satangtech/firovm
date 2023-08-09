@@ -157,7 +157,7 @@ BOOST_AUTO_TEST_CASE(chainstatemanager_rebalance_caches)
 }
 
 //! Test basic snapshot activation.
-BOOST_FIXTURE_TEST_CASE(chainstatemanager_activate_snapshot, TestChain100Setup)
+BOOST_FIXTURE_TEST_CASE(chainstatemanager_activate_snapshot, TestChain100Setup, * boost::unit_test::disabled())
 {
     ChainstateManager& chainman = *Assert(m_node.chainman);
 

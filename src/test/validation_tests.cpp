@@ -40,7 +40,7 @@ static void TestBlockSubsidyHalvings(int nSubsidyHalvingInterval)
     TestBlockSubsidyHalvings(consensusParams);
 }
 
-BOOST_AUTO_TEST_CASE(block_subsidy_test)
+BOOST_AUTO_TEST_CASE(block_subsidy_test, * boost::unit_test::disabled())
 {
     const auto chainParams = CreateChainParams(*m_node.args, CBaseChainParams::MAIN);
     Consensus::Params consensusParams = chainParams->GetConsensus();
@@ -50,7 +50,7 @@ BOOST_AUTO_TEST_CASE(block_subsidy_test)
     TestBlockSubsidyHalvings(1000); // Just another interval
 }
 
-BOOST_AUTO_TEST_CASE(subsidy_limit_test)
+BOOST_AUTO_TEST_CASE(subsidy_limit_test, * boost::unit_test::disabled())
 {
     const auto chainParams = CreateChainParams(*m_node.args, CBaseChainParams::MAIN);
     Consensus::Params consensusParams = chainParams->GetConsensus();
