@@ -53,7 +53,8 @@ BOOST_AUTO_TEST_CASE(block_subsidy_test, * boost::unit_test::disabled())
     TestBlockSubsidyHalvings(1000); // Just another interval
 }
 
-BOOST_AUTO_TEST_CASE(subsidy_limit_test, * boost::unit_test::disabled())
+/*
+BOOST_AUTO_TEST_CASE(subsidy_limit_test)
 {
     const auto chainParams = CreateChainParams(*m_node.args, CBaseChainParams::MAIN);
     Consensus::Params consensusParams = chainParams->GetConsensus();
@@ -98,6 +99,7 @@ BOOST_AUTO_TEST_CASE(subsidy_limit_test, * boost::unit_test::disabled())
     }
     BOOST_CHECK_EQUAL(nSum, CAmount{10782240625000000});
 }
+*/
 
 BOOST_AUTO_TEST_CASE(signet_parse_tests)
 {
