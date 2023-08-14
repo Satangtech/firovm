@@ -334,13 +334,23 @@ BOOST_FIXTURE_TEST_CASE(package_witness_swap_tests, TestChain100Setup)
 {
     // Mine blocks to mature coinbases.
     mineBlocks(5);
+    CScript coinbaseScript = GetScriptForDestination(PKHash(coinbaseKey.GetPubKey().GetID()));
+    auto _mtx = CreateManyOutputValidMempoolTransaction(/*input_transaction=*/ m_coinbase_txns[0], /*vout=*/ 0,
+                                            /*input_height=*/ 0, /*input_signing_key=*/ coinbaseKey,
+                                            /*vouts=*/ 5,
+                                            /*output_destination=*/ coinbaseScript,
+                                            /*output_amount=*/ CAmount(50 * COIN), /*submit=*/ true);
+    mineBlocks(1);
+
     LOCK(cs_main);
+
+    auto _ptx = MakeTransactionRef(_mtx);
 
     // Transactions with a same-txid-different-witness transaction in the mempool should be ignored,
     // and the mempool entry's wtxid returned.
     CScript witnessScript = CScript() << OP_DROP << OP_TRUE;
     CScript scriptPubKey = GetScriptForDestination(WitnessV0ScriptHash(witnessScript));
-    auto mtx_parent = CreateValidMempoolTransaction(/*input_transaction=*/ m_coinbase_txns[0], /*vout=*/ 0,
+    auto mtx_parent = CreateValidMempoolTransaction(/*input_transaction=*/ _ptx, /*vout=*/ 0,
                                                     /*input_height=*/ 0, /*input_signing_key=*/ coinbaseKey,
                                                     /*output_destination=*/ scriptPubKey,
                                                     /*output_amount=*/ CAmount(49 * COIN), /*submit=*/ false);
@@ -471,7 +481,7 @@ BOOST_FIXTURE_TEST_CASE(package_witness_swap_tests, TestChain100Setup)
     acs_witness.stack.push_back(std::vector<unsigned char>(acs_script.begin(), acs_script.end()));
 
     // parent1 will already be in the mempool
-    auto mtx_parent1 = CreateValidMempoolTransaction(/*input_transaction=*/ m_coinbase_txns[1], /*vout=*/ 0,
+    auto mtx_parent1 = CreateValidMempoolTransaction(/*input_transaction=*/ _ptx, /*vout=*/ 1,
                                                      /*input_height=*/ 0, /*input_signing_key=*/ coinbaseKey,
                                                      /*output_destination=*/ acs_spk,
                                                      /*output_amount=*/ CAmount(49 * COIN), /*submit=*/ true);
@@ -489,7 +499,7 @@ BOOST_FIXTURE_TEST_CASE(package_witness_swap_tests, TestChain100Setup)
     parent2_witness2.stack.push_back(std::vector<unsigned char>(grandparent2_script.begin(), grandparent2_script.end()));
 
     // Create grandparent2 creating an output with multiple spending paths. Submit to mempool.
-    auto mtx_grandparent2 = CreateValidMempoolTransaction(/*input_transaction=*/ m_coinbase_txns[2], /* vout=*/ 0,
+    auto mtx_grandparent2 = CreateValidMempoolTransaction(/*input_transaction=*/ _ptx, /* vout=*/ 2,
                                                           /*input_height=*/ 0, /*input_signing_key=*/ coinbaseKey,
                                                           /*output_destination=*/ grandparent2_spk,
                                                           /*output_amount=*/ CAmount(49 * COIN), /*submit=*/ true);
@@ -517,7 +527,7 @@ BOOST_FIXTURE_TEST_CASE(package_witness_swap_tests, TestChain100Setup)
     package_mixed.push_back(ptx_parent2_v1);
 
     // parent3 will be a new transaction
-    auto mtx_parent3 = CreateValidMempoolTransaction(/*input_transaction=*/ m_coinbase_txns[3], /*vout=*/ 0,
+    auto mtx_parent3 = CreateValidMempoolTransaction(/*input_transaction=*/ _ptx, /*vout=*/ 3,
                                                      /*input_height=*/ 0, /*input_signing_key=*/ coinbaseKey,
                                                      /*output_destination=*/ acs_spk,
                                                      /*output_amount=*/ CAmount(49 * COIN), /*submit=*/ false);

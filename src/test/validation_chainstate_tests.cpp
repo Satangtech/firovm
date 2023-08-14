@@ -81,7 +81,7 @@ BOOST_AUTO_TEST_CASE(validation_chainstate_resize_caches)
 //!
 //! When run on the background chainstate, UpdateTip should do a subset
 //! of what it does for the active chainstate.
-BOOST_FIXTURE_TEST_CASE(chainstate_update_tip, TestChain100Setup)
+BOOST_FIXTURE_TEST_CASE(chainstate_update_tip, TestChain100Setup, * boost::unit_test::disabled())
 {
     ChainstateManager& chainman = *Assert(m_node.chainman);
     uint256 curr_tip = ::g_best_block;

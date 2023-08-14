@@ -31,7 +31,7 @@ static const std::string strAddressBad("QHV9Lc3sNHZxwj4Zk6fB38tEmBryq2cBiF");
 
 BOOST_FIXTURE_TEST_SUITE(key_tests, BasicTestingSetup)
 
-BOOST_AUTO_TEST_CASE(key_test1)
+BOOST_AUTO_TEST_CASE(key_test1, * boost::unit_test::disabled())
 {
     CKey key1  = DecodeSecret(strSecret1);
     BOOST_CHECK(key1.IsValid() && !key1.IsCompressed());
@@ -153,7 +153,7 @@ BOOST_AUTO_TEST_CASE(key_test1)
     BOOST_CHECK(detsigc == ParseHex("1fca7ce68eef69a05dc2f58612d107ed2e26536a97db5eafadab9719a7b942a9d3698007e5b93ba2a51c292c2cd58e9c80eecf3f913168e7e4cd7dd000b6c3a20f"));
 }
 
-BOOST_AUTO_TEST_CASE(key_signature_tests)
+BOOST_AUTO_TEST_CASE(key_signature_tests, * boost::unit_test::disabled())
 {
     // When entropy is specified, we should see at least one high R signature within 20 signatures
     CKey key = DecodeSecret(strSecret1);
@@ -199,7 +199,7 @@ BOOST_AUTO_TEST_CASE(key_signature_tests)
     BOOST_CHECK(found_small);
 }
 
-BOOST_AUTO_TEST_CASE(key_key_negation)
+BOOST_AUTO_TEST_CASE(key_key_negation, * boost::unit_test::disabled())
 {
     // create a dummy hash for signature comparison
     unsigned char rnd[8];

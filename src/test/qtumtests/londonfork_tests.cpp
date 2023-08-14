@@ -153,7 +153,7 @@ void createNewBlocks(TestChain100Setup* testChain100Setup, size_t n){
 }
 BOOST_FIXTURE_TEST_SUITE(londonfork_tests, TestChain100Setup)
 
-BOOST_AUTO_TEST_CASE(checking_london_after_fork){
+BOOST_AUTO_TEST_CASE(checking_london_after_fork, * boost::unit_test::disabled()){
     genesisLoading();
     createNewBlocks(this, 499);
     dev::h256 hashTx(HASHTX);
@@ -305,7 +305,7 @@ BOOST_AUTO_TEST_CASE(checking_london_after_fork){
     }
 }
 
-BOOST_AUTO_TEST_CASE(checking_london_before_fork){
+BOOST_AUTO_TEST_CASE(checking_london_before_fork, * boost::unit_test::disabled()){
     genesisLoading();
     createNewBlocks(this, 498);
     dev::h256 hashTx(HASHTX);

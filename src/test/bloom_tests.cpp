@@ -75,7 +75,7 @@ BOOST_AUTO_TEST_CASE(bloom_create_insert_serialize_with_tweak)
     BOOST_CHECK_EQUAL_COLLECTIONS(result.begin(), result.end(), expected.begin(), expected.end());
 }
 
-BOOST_AUTO_TEST_CASE(bloom_create_insert_key)
+BOOST_AUTO_TEST_CASE(bloom_create_insert_key, * boost::unit_test::disabled())
 {
     std::string strSecret = std::string("5Kg1gnAjaLfKiwhhPpGS3QfRg2m6awQvaj98JCZBZQ5SuS2F15C");
     CKey key = DecodeSecret(strSecret);

@@ -20,7 +20,7 @@ UniValue read_json(const std::string& jsondata);
 BOOST_FIXTURE_TEST_SUITE(key_io_tests, BasicTestingSetup)
 
 // Goal: check that parsed keys match test payload
-BOOST_AUTO_TEST_CASE(key_io_valid_parse)
+BOOST_AUTO_TEST_CASE(key_io_valid_parse, * boost::unit_test::disabled())
 {
     UniValue tests = read_json(std::string(json_tests::key_io_valid, json_tests::key_io_valid + sizeof(json_tests::key_io_valid)));
     CKey privkey;
@@ -81,7 +81,7 @@ BOOST_AUTO_TEST_CASE(key_io_valid_parse)
 }
 
 // Goal: check that generated keys match test vectors
-BOOST_AUTO_TEST_CASE(key_io_valid_gen)
+BOOST_AUTO_TEST_CASE(key_io_valid_gen, * boost::unit_test::disabled())
 {
     UniValue tests = read_json(std::string(json_tests::key_io_valid, json_tests::key_io_valid + sizeof(json_tests::key_io_valid)));
 

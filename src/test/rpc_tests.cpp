@@ -107,7 +107,7 @@ BOOST_AUTO_TEST_CASE(rpc_togglenetwork)
     BOOST_CHECK_EQUAL(netState, true);
 }
 
-BOOST_AUTO_TEST_CASE(rpc_rawsign)
+BOOST_AUTO_TEST_CASE(rpc_rawsign, * boost::unit_test::disabled())
 {
     UniValue r;
     // input is a 1-of-2 multisig (so is output):

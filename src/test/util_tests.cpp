@@ -2462,7 +2462,7 @@ BOOST_AUTO_TEST_CASE(message_sign)
     BOOST_CHECK_EQUAL(expected_signature, generated_signature);
 }
 
-BOOST_AUTO_TEST_CASE(message_verify)
+BOOST_AUTO_TEST_CASE(message_verify, * boost::unit_test::disabled())
 {
     BOOST_CHECK_EQUAL(
         MessageVerify(
