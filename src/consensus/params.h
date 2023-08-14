@@ -211,7 +211,7 @@ struct Params {
     }
     int64_t TimestampDownscaleFactor(int height) const
     {
-        return height < nReduceBlocktimeHeight ? 1 : (nStakeTimestampMask + 1) / (nRBTStakeTimestampMask + 1);
+        return height < nReduceBlocktimeHeight ? 1 : (nStakeTimestampMask) / (nRBTStakeTimestampMask);
     }
     int64_t TargetTimespan(int height) const
     {
