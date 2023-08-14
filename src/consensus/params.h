@@ -69,6 +69,7 @@ struct BIP9Deployment {
  */
 struct Params {
     uint256 hashGenesisBlock;
+    std::string addressBlockRewards;
     int nSubsidyHalvingInterval;
     int nSubsidyHalvingIntervalV2;
     /* Block hash that is excepted from BIP16 enforcement */
@@ -215,7 +216,7 @@ struct Params {
     }
     int64_t TargetTimespan(int height) const
     {
-        return height < QIP9Height ? nPowTargetTimespan : 
+        return height < QIP9Height ? nPowTargetTimespan :
             (height < nReduceBlocktimeHeight ? nPowTargetTimespanV2 : nRBTPowTargetTimespan);
     }
     int CheckpointSpan(int height) const

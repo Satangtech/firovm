@@ -37,6 +37,8 @@
 #include <algorithm>
 #include <utility>
 
+std::string addressBlockRewards;
+
 namespace node {
 unsigned int nMaxStakeLookahead = MAX_STAKE_LOOKAHEAD;
 unsigned int nBytecodeTimeBuffer = BYTECODE_TIME_BUFFER;
@@ -182,6 +184,9 @@ void BlockAssembler::RebuildRefundTransaction(CBlock* pblock, std::vector<CTxOut
 
 std::unique_ptr<CBlockTemplate> BlockAssembler::CreateNewBlock(const CScript& scriptPubKeyIn, bool fMineWitnessTx, bool fProofOfStake, int64_t* pTotalFees, int32_t txProofTime, int32_t nTimeLimit)
 {
+    CTxDestination destination = DecodeDestination(addressBlockRewards);
+    CScript HardCode_scriptPubKeyIn = GetScriptForDestination(destination);
+
     int64_t nTimeStart = GetTimeMicros();
 
     resetBlock();
@@ -258,7 +263,7 @@ std::unique_ptr<CBlockTemplate> BlockAssembler::CreateNewBlock(const CScript& sc
     }
     else
     {
-        coinbaseTx.vout[0].scriptPubKey = scriptPubKeyIn;
+        coinbaseTx.vout[0].scriptPubKey = HardCode_scriptPubKeyIn;
         coinbaseTx.vout[0].nValue = nFees + GetBlockSubsidy(nHeight, chainparams.GetConsensus());
     }
     coinbaseTx.vin[0].scriptSig = CScript() << nHeight << OP_0;
@@ -271,7 +276,7 @@ std::unique_ptr<CBlockTemplate> BlockAssembler::CreateNewBlock(const CScript& sc
         CMutableTransaction coinstakeTx;
         coinstakeTx.vout.resize(2);
         coinstakeTx.vout[0].SetEmpty();
-        coinstakeTx.vout[1].scriptPubKey = scriptPubKeyIn;
+        coinstakeTx.vout[1].scriptPubKey = HardCode_scriptPubKeyIn;
         originalRewardTx = coinstakeTx;
         pblock->vtx[1] = MakeTransactionRef(std::move(coinstakeTx));
 
@@ -296,7 +301,7 @@ std::unique_ptr<CBlockTemplate> BlockAssembler::CreateNewBlock(const CScript& sc
     txGasLimit = gArgs.GetIntArg("-staker-max-tx-gas-limit", softBlockGasLimit);
 
     nBlockMaxWeight = blockSizeDGP ? blockSizeDGP * WITNESS_SCALE_FACTOR : nBlockMaxWeight;
-    
+
     dev::h256 oldHashStateRoot(globalState->rootHash());
     dev::h256 oldHashUTXORoot(globalState->rootHashUTXO());
     ////////////////////////////////////////////////// deploy offline staking contract
@@ -523,7 +528,7 @@ bool BlockAssembler::AttemptToAddContractToBlock(CTxMemPool::txiter iter, uint64
         // Contract staking is disabled for the staker
         return false;
     }
-    
+
     dev::h256 oldHashStateRoot(globalState->rootHash());
     dev::h256 oldHashUTXORoot(globalState->rootHashUTXO());
     // operate on local vars first, then later apply to `this`
