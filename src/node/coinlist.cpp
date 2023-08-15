@@ -33,13 +33,21 @@ void CoinListUpdater::Update()
     int nHeight = pwallet->chain().getHeight().value_or(0);
     
     int checkpointSpan = Params().GetConsensus().CheckpointSpan(nHeight);
-    std::vector<UTXOUsed> used;
+    std::vector<UTXOUsed> readdList;
     if(nHeight <= checkpointSpan)
     {
         // Get delegations from events
         std::vector<UTXOUpdateEvent> events;
         fvmMinerList.FilterUTXOUpdateEvents(events, pwallet->chain().chainman());
         minerList = fvmMinerList.UTXOListFromEvents(events);
+
+        // Get used from blocks
+        std::vector<UTXOUsed> _usedList;
+        fvmMinerList.UpdateUsedListFromBlocks(_usedList, pwallet->chain().chainman());
+        newCoinList.clear();
+        for (const auto &u: _usedList) {
+            newCoinList.emplace(u.output);
+        }
     }
     else
     {
@@ -50,7 +58,13 @@ void CoinListUpdater::Update()
             std::vector<UTXOUpdateEvent> events;
             fvmMinerList.FilterUTXOUpdateEvents(events, pwallet->chain().chainman(), cacheHeight, cpsHeight);
             fvmMinerList.UpdateUTXOListFromEvents(events, cacheMinerList);
-            fvmMinerList.UpdateUsedListFromBlocks(used, pwallet->chain().chainman(), cacheHeight, cpsHeight);
+
+            std::vector<UTXOUsed> _usedList;
+            fvmMinerList.UpdateUsedListFromBlocks(_usedList, pwallet->chain().chainman(), cacheHeight, cpsHeight);
+            for (const auto &u: _usedList) {
+                cacheNewCoinList.emplace(u.output);
+            }
+            readdList = _usedList;
             cacheHeight = cpsHeight;
         }
 
@@ -59,10 +73,17 @@ void CoinListUpdater::Update()
         fvmMinerList.FilterUTXOUpdateEvents(events, pwallet->chain().chainman(), cacheHeight + 1);
         minerList = cacheMinerList;
         fvmMinerList.UpdateUTXOListFromEvents(events, minerList);
+
+        std::vector<UTXOUsed> _usedList;
+        fvmMinerList.UpdateUsedListFromBlocks(_usedList, pwallet->chain().chainman(), cacheHeight + 1);
+        newCoinList = cacheNewCoinList;
+        for (const auto &u: _usedList) {
+            newCoinList.emplace(u.output);
+        }
     }
 
     // filter in wallet
-    for (auto const &u : used) {
+    for (auto const &u : readdList) {
         LOCK(pwallet->cs_wallet);
         auto isMine = wallet::InputIsMine(*pwallet, u.input);
         bool usable = false;
@@ -76,60 +97,29 @@ void CoinListUpdater::Update()
         }
 
         if (isMine & (wallet::isminetype::ISMINE_SPENDABLE | wallet::isminetype::ISMINE_USED)) {
-            CreateUpdateCoinListTransaction(nHeight, u.scriptPubKey, u.input.prevout, u.output);
+            CreateUpdateCoinListTransaction(nHeight, u.scriptPubKey, u.input.prevout, u.output, newCoinList);
         }
     }
 }
 
-void CoinListUpdater::CreateUpdateCoinListTransaction(int height, CScript scriptPubKey, const COutPoint &in, const COutPoint &out) {
+bool CoinListUpdater::CreateUpdateCoinListTransaction(int height, CScript scriptPubKey, const COutPoint &in, const COutPoint &out, const std::set<COutPoint> &newCoins) {
     auto calldata = FVMPoA::UpdatePayload(uint160(ExtractPublicKeyHash(scriptPubKey)), in, out);
-
     bool fPsbt = pwallet->IsWalletFlagSet(wallet::WalletFlags::WALLET_FLAG_DISABLE_PRIVATE_KEYS);
-
-    wallet::CCoinControl coinControl;
-    if(fPsbt) coinControl.fAllowWatchOnly = true;
-    coinControl.fAllowOtherInputs=true;
-
-    // Find a UTXO with sender address
-    std::vector<wallet::COutput> vecOutputs;
-    wallet::AvailableCoins(*pwallet, vecOutputs);
-
-    CTxDestination senderAddress = ExtractPublicKeyHash(scriptPubKey);
-
-    for (const auto &out : vecOutputs) {
-        COutPoint outpoint(out.tx->GetHash(), out.i);
-        CTxDestination destAddress;
-        const CScript& scriptPubKey = out.tx->tx->vout[out.i].scriptPubKey;
-        bool fValidAddress = out.fSpendable && ExtractDestination(scriptPubKey, destAddress);
-
-        if (!fValidAddress || minerList.find(outpoint) != minerList.end())
-            continue;
-
-        if (height >= Params().GetConsensus().QIP5Height) {
-            coinControl.Select(outpoint);
-            break;
-        } else {
-            if (senderAddress == destAddress) {
-                coinControl.Select(outpoint);
-                break;
-            }
-        }
-    }
-
-    if (!coinControl.HasSelected()) {
-        // TODO: handle no other coins
-    }
-
-    uint64_t nGasLimit=DEFAULT_GAS_LIMIT_OP_SEND;
+    uint64_t nGasLimit = 52579;
     uint64_t blockGasLimit = 0, minGasPrice = 0;
     CAmount nGasPrice = 0;
     int _height = 0;
     auto &chainman = pwallet->chain().chainman();
     getDgpData(blockGasLimit, minGasPrice, nGasPrice, _height, chainman);
 
-    // TODO:
-    // EnsureWalletIsUnlocked(*pwallet);
-    CAmount nGasFee=nGasPrice*nGasLimit;
+    CAmount nGasFee = nGasPrice * nGasLimit;
+
+    wallet::CCoinControl coinControl;
+    if(fPsbt) coinControl.fAllowWatchOnly = true;
+    coinControl.fAllowOtherInputs = true;
+    coinControl.m_add_inputs = true;
+
+    CTxDestination senderAddress = ExtractPublicKeyHash(scriptPubKey);
 
     CScript script = CScript() << CScriptNum(VersionVM::GetEVMDefault().toRaw())
         << CScriptNum(nGasLimit)
@@ -156,19 +146,48 @@ void CoinListUpdater::CreateUpdateCoinListTransaction(int height, CScript script
         }
     }
 
-    // Create and send the transaction
-    CAmount nFeeRequired;
-    bilingual_str error;
-    std::vector<wallet::CRecipient> vecSend = {{script, 0, false}};
-    int nChangePosRet = -1;
+    // Try to create tx from available coins
+    std::vector<wallet::COutput> vecOutputs;
+    wallet::AvailableCoins(*pwallet, vecOutputs);
+    for (const auto &out : vecOutputs) {
+        COutPoint outpoint(out.tx->GetHash(), out.i);
+        CTxDestination destAddress;
+        const CScript& scriptPubKey = out.tx->tx->vout[out.i].scriptPubKey;
+        bool fValidAddress = out.fSpendable && ExtractDestination(scriptPubKey, destAddress);
 
-    bool sign = !fPsbt;
-    CTransactionRef tx;
-    FeeCalculation fee_calc_out;
-    if (!CreateTransaction(*pwallet, vecSend, tx, nFeeRequired, nChangePosRet, error, coinControl, fee_calc_out, sign, nGasFee, true, senderAddress)) {
-        throw std::runtime_error(error.original);
+        if (!fValidAddress || minerList.find(outpoint) != minerList.end() || newCoins.find(outpoint) != newCoins.end())
+            continue;
+
+        LogPrintf("CreateUpdateCoinListTransaction(): chosen  outpoint=%s, nValue=%d\n", outpoint.ToString(), out.tx->tx->vout[out.i].nValue);
+        if (height >= Params().GetConsensus().QIP5Height) {
+            coinControl.Select(outpoint);
+            coinControl.destChange = destAddress;
+        } else {
+            if (senderAddress == destAddress) {
+                coinControl.Select(outpoint);
+                coinControl.destChange = destAddress;
+            }
+        }
+        
+        // Create and send the transaction
+        CAmount nFeeRequired;
+        bilingual_str error;
+        std::vector<wallet::CRecipient> vecSend = {{script, 0, false}};
+        int nChangePosRet = -1;
+
+        bool sign = !fPsbt;
+        CTransactionRef tx;
+        FeeCalculation fee_calc_out;
+        bool result = CreateTransaction(*pwallet, vecSend, tx, nFeeRequired, nChangePosRet, error, coinControl, fee_calc_out, sign, nGasFee, true, senderAddress);
+        if (!result) {
+            continue;
+        }
+
+        pwallet->CommitTransaction(tx, {}, {});
+        LogPrintf("CreateUpdateCoinListTransaction(): txid=%s\n", tx->GetHash().GetHex());
+
+        return true;
     }
-    pwallet->CommitTransaction(tx, {}, {});
 
-    LogPrintf("CreateUpdateCoinListTransaction(): txid=%s\n", tx->GetHash().GetReverseHex());
+    return false;
 }
