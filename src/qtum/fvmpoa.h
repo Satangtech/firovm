@@ -19,6 +19,8 @@ struct COutPointHasher {
     }
 };
 
+using UTXOMap = std::unordered_map<COutPoint, std::pair<COutPoint, uint160>, COutPointHasher>;
+
 extern const std::string strPoAABI;
 
 enum UTXOUpdateType
@@ -64,13 +66,13 @@ public:
 
     bool FilterUTXOUpdateEvents(std::vector<UTXOUpdateEvent> &events, ChainstateManager &chainmain, int fromBlock = 0, int toBlock = -1);
 
-    std::unordered_map<COutPoint, uint160, COutPointHasher> UTXOListFromEvents(const std::vector<UTXOUpdateEvent> &events);
+    UTXOMap UTXOListFromEvents(const std::vector<UTXOUpdateEvent> &events);
 
-    void UpdateUTXOListFromEvents(const std::vector<UTXOUpdateEvent> &events, std::unordered_map<COutPoint, uint160, COutPointHasher> &utxos);
+    void UpdateUTXOListFromEvents(const std::vector<UTXOUpdateEvent> &events, UTXOMap &utxos);
 
-    std::unordered_map<COutPoint, COutPoint, COutPointHasher> UTXOMapFromBlocks(ChainstateManager &chainmain, int fromBlock = 0, int toBlock = -1);
+    UTXOMap UTXOMapFromBlocks(ChainstateManager &chainmain, int fromBlock = 0, int toBlock = -1);
 
-    void UpdateUTXOMapFromBlocks(std::unordered_map<COutPoint, COutPoint, COutPointHasher> &utxoMap, ChainstateManager &chainmain, int fromBlock = 0, int toBlock = -1);
+    void UpdateUTXOMapFromBlocks(UTXOMap &utxoMap, ChainstateManager &chainmain, int fromBlock = 0, int toBlock = -1);
 
     static std::string UpdatePayload(const uint160& address, const COutPoint& old, const COutPoint& _new);
 

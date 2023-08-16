@@ -6,7 +6,6 @@
 CoinList::CoinList() : height(-1) {}
 
 void CoinList::clear() {
-    minerList.clear();
     utxoMap.clear();
     height = -1;
 }
@@ -20,34 +19,31 @@ void CoinList::Update(ChainstateManager& chainman)
 
     LogPrintf("Update(): from = %d, to = %d\n", height + 1, cur);
 
-    // Update the wallet delegations
-    std::vector<UTXOUpdateEvent> events;
-    fvmMinerList.FilterUTXOUpdateEvents(events, chainman, height + 1, cur);
-    fvmMinerList.UpdateUTXOListFromEvents(events, minerList);
-    fvmMinerList.UpdateUTXOMapFromBlocks(utxoMap, chainman, height + 1, cur);
+    for (int _height = height + 1; _height <= cur; _height++) {
+        fvmMinerList.UpdateUTXOMapFromBlocks(utxoMap, chainman, _height, _height);
+        std::vector<UTXOUpdateEvent> events;
+        fvmMinerList.FilterUTXOUpdateEvents(events, chainman, _height, _height);
+        fvmMinerList.UpdateUTXOListFromEvents(events, utxoMap);
+    }
 
     height = cur;
 
-    LogPrintf("Update(): minerList=%d\n", minerList.size());
     LogPrintf("Update(): utxoMap=%d\n", utxoMap.size());
 }
 
 bool CoinList::GetRoot(const COutPoint& child, const uint160 &address, COutPoint &root) {
     auto mapItr = utxoMap.find(child);
 
-    // if not found in map then it should be root it safe
-    COutPoint tmpRoot = mapItr == utxoMap.end() ? child : mapItr->second;
-
-    auto minerItr = minerList.find(tmpRoot);
-    if (minerItr == minerList.end()) {
+    auto rootItr = utxoMap.find(child);
+    if (rootItr == utxoMap.end()) {
         return false;
     }
 
-    if (minerItr->second != address) {
+    if (rootItr->second.second != address) {
         return false;
     }
 
-    root = tmpRoot;
+    root = rootItr->second.first;
     return true;
 }
 
@@ -55,12 +51,11 @@ bool CoinList::GetRoot(const COutPoint& child, COutPoint &root) {
     auto mapItr = utxoMap.find(child);
 
     // if not found in map then it should be root it safe
-    COutPoint tmpRoot = mapItr == utxoMap.end() ? child : mapItr->second;
-    auto minerItr = minerList.find(tmpRoot);
-    if (minerItr == minerList.end()) {
+    auto rootItr = utxoMap.find(child);
+    if (rootItr == utxoMap.end()) {
         return false;
     }
 
-    root = tmpRoot;
+    root = rootItr->second.first;
     return true;
 }

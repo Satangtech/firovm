@@ -258,25 +258,28 @@ bool FVMPoA::FilterUTXOUpdateEvents(std::vector<UTXOUpdateEvent> &events, Chains
     return true;
 }
 
-std::unordered_map<COutPoint, uint160, COutPointHasher> FVMPoA::UTXOListFromEvents(const std::vector<UTXOUpdateEvent> &events) {
-    std::unordered_map<COutPoint, uint160, COutPointHasher> utxos;
+UTXOMap FVMPoA::UTXOListFromEvents(const std::vector<UTXOUpdateEvent> &events) {
+    UTXOMap utxos;
     UpdateUTXOListFromEvents(events, utxos);
     return utxos;
 }
 
-void FVMPoA::UpdateUTXOListFromEvents(const std::vector<UTXOUpdateEvent> &events, std::unordered_map<COutPoint, uint160, COutPointHasher> &utxos) {
+void FVMPoA::UpdateUTXOListFromEvents(const std::vector<UTXOUpdateEvent> &events, UTXOMap &utxos) {
     for (auto const &event: events) {
         switch (event.type) {
         case UTXOUpdateType::UTXOUPDATE_ADDED:
         {
-            utxos.emplace(event.output, event.address);
+            utxos.emplace(event.output, std::make_pair(event.output, event.address));
             break;
         }
         case UTXOUpdateType::UTXOUPDATE_REMOVED:
         {
-            auto it = utxos.find(event.output);
-            if (it != utxos.end()) {
-                utxos.erase(it);
+            std::pair<COutPoint, uint160> removeValue;
+            for (auto it = utxos.begin(); it != utxos.end(); it++) {
+                if (it->second == removeValue) {
+                    utxos.erase(it);
+                    break;
+                }
             }
             break;
         }
@@ -286,14 +289,14 @@ void FVMPoA::UpdateUTXOListFromEvents(const std::vector<UTXOUpdateEvent> &events
     }
 }
 
-std::unordered_map<COutPoint, COutPoint, COutPointHasher> FVMPoA::UTXOMapFromBlocks(ChainstateManager &chainmain, int fromBlock, int toBlock) {
-    std::unordered_map<COutPoint, COutPoint, COutPointHasher> utxoMap;
+UTXOMap FVMPoA::UTXOMapFromBlocks(ChainstateManager &chainmain, int fromBlock, int toBlock) {
+    UTXOMap utxoMap;
     UpdateUTXOMapFromBlocks(utxoMap, chainmain, fromBlock, toBlock);
     return utxoMap;
 }
 
 
-void FVMPoA::UpdateUTXOMapFromBlocks(std::unordered_map<COutPoint, COutPoint, COutPointHasher> &utxoMap, ChainstateManager &chainman, int fromBlock, int toBlock) {
+void FVMPoA::UpdateUTXOMapFromBlocks(UTXOMap &utxoMap, ChainstateManager &chainman, int fromBlock, int toBlock) {
 
     LOCK(cs_main);
     const CChain& active_chain = chainman.ActiveChain();
@@ -313,17 +316,19 @@ void FVMPoA::UpdateUTXOMapFromBlocks(std::unordered_map<COutPoint, COutPoint, CO
 
         auto tx = block.vtx[1];
 
-        auto root = tx->vin[0].prevout;
+        // TODO: check address before update
         auto rootItr = utxoMap.find(tx->vin[0].prevout);
-        if (rootItr != utxoMap.end()) {
-            root = rootItr->second;
-            utxoMap.erase(rootItr);
+        if (rootItr == utxoMap.end()) {
+            throw std::runtime_error("parent utxo is not found");
         }
+        auto root = rootItr->second;
 
         COutPoint out = {tx->GetHash(), 1};
         if (!utxoMap.emplace(out, root).second) {
             throw std::runtime_error("new output is already in map");
         }
+
+        utxoMap.erase(rootItr);
     }
 }
 
