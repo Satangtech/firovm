@@ -269,14 +269,17 @@ void FVMPoA::UpdateUTXOListFromEvents(const std::vector<UTXOUpdateEvent> &events
         switch (event.type) {
         case UTXOUpdateType::UTXOUPDATE_ADDED:
         {
+            LogPrintf("UpdateUTXOListFromEvents(): add=%s, address=%s\n", event.output.ToString(), event.address.GetReverseHex());
             utxos.emplace(event.output, std::make_pair(event.output, event.address));
             break;
         }
         case UTXOUpdateType::UTXOUPDATE_REMOVED:
         {
-            std::pair<COutPoint, uint160> removeValue;
+            std::pair<COutPoint, uint160> removeValue = std::make_pair(event.output, event.address);
             for (auto it = utxos.begin(); it != utxos.end(); it++) {
                 if (it->second == removeValue) {
+                    LogPrintf("UpdateUTXOListFromEvents(): remove=%s, root.coin=%s, root.address=%s\n",
+                        it->first.ToString(), it->second.first.ToString(), it->second.second.GetReverseHex());
                     utxos.erase(it);
                     break;
                 }
@@ -329,6 +332,8 @@ void FVMPoA::UpdateUTXOMapFromBlocks(UTXOMap &utxoMap, ChainstateManager &chainm
         }
 
         utxoMap.erase(rootItr);
+
+        LogPrintf("UpdateUTXOMapFromBlocks(): from=%s, to=%s, root.first=%s, root.second=%s\n", tx->vin[0].prevout.ToString(), out.ToString(), root.first.ToString(), root.second.ToString());
     }
 }
 

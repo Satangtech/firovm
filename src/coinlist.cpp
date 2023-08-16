@@ -17,7 +17,7 @@ void CoinList::Update(ChainstateManager& chainman)
     }
     int cur = chainman.ActiveHeight();
 
-    LogPrintf("Update(): from = %d, to = %d\n", height + 1, cur);
+    LogPrintf("Update(): updateing utxoMap=%d, height=%d, cur=%d\n", utxoMap.size(), height, cur);
 
     for (int _height = height + 1; _height <= cur; _height++) {
         fvmMinerList.UpdateUTXOMapFromBlocks(utxoMap, chainman, _height, _height);
@@ -25,7 +25,6 @@ void CoinList::Update(ChainstateManager& chainman)
         fvmMinerList.FilterUTXOUpdateEvents(events, chainman, _height, _height);
         fvmMinerList.UpdateUTXOListFromEvents(events, utxoMap);
     }
-
     height = cur;
 
     LogPrintf("Update(): utxoMap=%d\n", utxoMap.size());
