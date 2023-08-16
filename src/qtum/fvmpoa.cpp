@@ -258,18 +258,18 @@ bool FVMPoA::FilterUTXOUpdateEvents(std::vector<UTXOUpdateEvent> &events, Chains
     return true;
 }
 
-std::set<COutPoint> FVMPoA::UTXOListFromEvents(const std::vector<UTXOUpdateEvent> &events) {
-    std::set<COutPoint> utxos;
+std::unordered_map<COutPoint, uint160, COutPointHasher> FVMPoA::UTXOListFromEvents(const std::vector<UTXOUpdateEvent> &events) {
+    std::unordered_map<COutPoint, uint160, COutPointHasher> utxos;
     UpdateUTXOListFromEvents(events, utxos);
     return utxos;
 }
 
-void FVMPoA::UpdateUTXOListFromEvents(const std::vector<UTXOUpdateEvent> &events, std::set<COutPoint> &utxos) {
+void FVMPoA::UpdateUTXOListFromEvents(const std::vector<UTXOUpdateEvent> &events, std::unordered_map<COutPoint, uint160, COutPointHasher> &utxos) {
     for (auto const &event: events) {
         switch (event.type) {
         case UTXOUpdateType::UTXOUPDATE_ADDED:
         {
-            utxos.insert(event.output);
+            utxos.emplace(event.output, event.address);
             break;
         }
         case UTXOUpdateType::UTXOUPDATE_REMOVED:
@@ -286,8 +286,14 @@ void FVMPoA::UpdateUTXOListFromEvents(const std::vector<UTXOUpdateEvent> &events
     }
 }
 
+std::unordered_map<COutPoint, COutPoint, COutPointHasher> FVMPoA::UTXOMapFromBlocks(ChainstateManager &chainmain, int fromBlock, int toBlock) {
+    std::unordered_map<COutPoint, COutPoint, COutPointHasher> utxoMap;
+    UpdateUTXOMapFromBlocks(utxoMap, chainmain, fromBlock, toBlock);
+    return utxoMap;
+}
 
-void FVMPoA::UpdateUsedListFromBlocks(std::vector<UTXOUsed> &used, ChainstateManager &chainman, int fromBlock, int toBlock) {
+
+void FVMPoA::UpdateUTXOMapFromBlocks(std::unordered_map<COutPoint, COutPoint, COutPointHasher> &utxoMap, ChainstateManager &chainman, int fromBlock, int toBlock) {
 
     LOCK(cs_main);
     const CChain& active_chain = chainman.ActiveChain();
@@ -306,7 +312,18 @@ void FVMPoA::UpdateUsedListFromBlocks(std::vector<UTXOUsed> &used, ChainstateMan
         }
 
         auto tx = block.vtx[1];
-        used.push_back({tx->vout[1].scriptPubKey, tx->vin[0], {tx->GetHash(), 1}});
+
+        auto root = tx->vin[0].prevout;
+        auto rootItr = utxoMap.find(tx->vin[0].prevout);
+        if (rootItr != utxoMap.end()) {
+            root = rootItr->second;
+            utxoMap.erase(rootItr);
+        }
+
+        COutPoint out = {tx->GetHash(), 1};
+        if (!utxoMap.emplace(out, root).second) {
+            throw std::runtime_error("new output is already in map");
+        }
     }
 }
 

@@ -48,6 +48,7 @@
 #include <libethashseal/GenesisInfo.h>
 #include <script/standard.h>
 #include <qtum/storageresults.h>
+#include <coinlist.h>
 
 
 extern std::unique_ptr<QtumState> globalState;
@@ -55,6 +56,7 @@ extern std::shared_ptr<dev::eth::SealEngineFace> globalSealEngine;
 extern bool fRecordLogOpcodes;
 extern bool fIsVMlogFile;
 extern bool fGettingValuesDGP;
+extern std::unique_ptr<CoinList> coinList;
 
 struct EthTransactionParams;
 using valtype = std::vector<unsigned char>;

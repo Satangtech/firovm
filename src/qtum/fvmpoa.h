@@ -1,8 +1,23 @@
 #ifndef FVMPOA_H
 #define FVMPOA_H
 
-#include <validation.h>
 #include <util/contractabi.h>
+#include <primitives/transaction.h>
+#include <eth_client/libdevcore/Address.h>
+#include <eth_client/libethcore/LogEntry.h>
+
+class CChainState;
+class ChainstateManager;
+
+struct COutPointHasher {
+    std::size_t operator()(COutPoint const& s) const noexcept {
+        return std::hash<uint64_t>{}(s.hash.GetUint64(0)) 
+            ^ std::hash<uint64_t>{}(s.hash.GetUint64(1))
+            ^ std::hash<uint64_t>{}(s.hash.GetUint64(2)) 
+            ^ std::hash<uint64_t>{}(s.hash.GetUint64(3)) 
+            ^ std::hash<uint32_t>{}(s.n);
+    }
+};
 
 extern const std::string strPoAABI;
 
@@ -49,11 +64,13 @@ public:
 
     bool FilterUTXOUpdateEvents(std::vector<UTXOUpdateEvent> &events, ChainstateManager &chainmain, int fromBlock = 0, int toBlock = -1);
 
-    std::set<COutPoint> UTXOListFromEvents(const std::vector<UTXOUpdateEvent> &events);
+    std::unordered_map<COutPoint, uint160, COutPointHasher> UTXOListFromEvents(const std::vector<UTXOUpdateEvent> &events);
 
-    void UpdateUTXOListFromEvents(const std::vector<UTXOUpdateEvent> &events, std::set<COutPoint> &utxos);
+    void UpdateUTXOListFromEvents(const std::vector<UTXOUpdateEvent> &events, std::unordered_map<COutPoint, uint160, COutPointHasher> &utxos);
 
-    void UpdateUsedListFromBlocks(std::vector<UTXOUsed> &used, ChainstateManager &chainmain, int fromBlock = 0, int toBlock = -1);
+    std::unordered_map<COutPoint, COutPoint, COutPointHasher> UTXOMapFromBlocks(ChainstateManager &chainmain, int fromBlock = 0, int toBlock = -1);
+
+    void UpdateUTXOMapFromBlocks(std::unordered_map<COutPoint, COutPoint, COutPointHasher> &utxoMap, ChainstateManager &chainmain, int fromBlock = 0, int toBlock = -1);
 
     static std::string UpdatePayload(const uint160& address, const COutPoint& old, const COutPoint& _new);
 
