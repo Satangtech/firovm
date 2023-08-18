@@ -167,6 +167,7 @@ ChainTestingSetup::ChainTestingSetup(const std::string& chainName, const std::ve
     std::filesystem::create_directories(pathTemp);
     const dev::h256 hashDB(dev::sha3(dev::rlp("")));
     globalState = std::unique_ptr<QtumState>(new QtumState(dev::u256(0), QtumState::openDB(pathTemp.string(), hashDB, dev::WithExisting::Trust), pathTemp.string(), dev::eth::BaseState::Empty));
+    coinList = std::unique_ptr<CoinList>(new CoinList());
     dev::eth::ChainParams cp(chainparams.EVMGenesisInfo());
     cp.EIP150ForkBlock = 0xffffffffffffffff;
     cp.EIP158ForkBlock = 0xffffffffffffffff;
@@ -285,7 +286,7 @@ TestChain100Setup::TestChain100Setup(const std::vector<const char*>& extra_args)
         LOCK(::cs_main);
         assert(
             m_node.chainman->ActiveChain().Tip()->GetBlockHash().ToString() ==
-            "3a607e493b71fb54a02b3d7ddb203a12b1c1770bf0581d38a58217f56448903f");
+            "7c64fe6137e95c82cfcf3f490f5c355d6365ee2f102d8c135d57854323fd89a8");
     }
 }
 

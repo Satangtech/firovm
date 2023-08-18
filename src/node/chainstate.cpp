@@ -163,6 +163,11 @@ std::optional<ChainstateLoadingError> LoadChainstate(bool fReset,
     fIsVMlogFile = fs::exists(gArgs.GetDataDirNet() / "vmExecLogs.json");
     ///////////////////////////////////////////////////////////
 
+    /////////////////////////////////////////////////////////// firovm
+    coinList = std::unique_ptr<CoinList>(new CoinList());
+    coinList->Update(chainman);
+    ///////////////////////////////////////////////////////////
+
     /////////////////////////////////////////////////////////////// // qtum
     if (fAddressIndex != args.GetBoolArg("-addrindex", DEFAULT_ADDRINDEX)) {
         return ChainstateLoadingError::ERROR_ADDRINDEX_NEEDS_REINDEX;

@@ -9,6 +9,7 @@
 #include <chain.h>
 #include <chainparams.h>
 #include <checkqueue.h>
+#include <coinlist.h>
 #include <consensus/amount.h>
 #include <consensus/consensus.h>
 #include <consensus/merkle.h>
@@ -121,6 +122,7 @@ bool fRecordLogOpcodes = false;
 bool fIsVMlogFile = false;
 bool fGettingValuesDGP = false;
 std::set<std::pair<COutPoint, unsigned int>> setStakeSeen;
+std::unique_ptr<CoinList> coinList;
 
 bool CBlockIndexWorkComparator::operator()(const CBlockIndex *pa, const CBlockIndex *pb) const {
     // First sort by most total work, ...
@@ -4299,6 +4301,14 @@ bool CChainState::ActivateBestChainStep(BlockValidationState& state, CBlockIndex
         fBlocksDisconnected = true;
     }
 
+////////////////////////////////////////////////////////////////////////// firovm
+    // reset coin list if there are any disconnected
+    if (fBlocksDisconnected) {
+        coinList->clear();
+        coinList->Update(m_chainman);
+    }
+//////////////////////////////////////////////////////////////////////////
+
     // Build list of new blocks to connect (in descending height order).
     std::vector<CBlockIndex*> vpindexToConnect;
     bool fContinue = true;
@@ -4337,6 +4347,7 @@ bool CChainState::ActivateBestChainStep(BlockValidationState& state, CBlockIndex
                 }
             } else {
                 PruneBlockIndexCandidates();
+                coinList->Update(m_chainman);
                 if (!pindexOldTip || m_chain.Tip()->nChainWork > pindexOldTip->nChainWork) {
                     // We're in a better position than we were. Return temporarily to release the lock.
                     fContinue = false;
@@ -4631,6 +4642,12 @@ bool CChainState::InvalidateBlock(BlockValidationState& state, CBlockIndex* pind
         // Track the last disconnected block, so we can correct its BLOCK_FAILED_CHILD status in future
         // iterations, or, if it's the last one, call InvalidChainFound on it.
         to_mark_failed = invalid_walk_tip;
+    }
+
+    {
+        LOCK(cs_main);
+        coinList->clear();
+        coinList->Update(m_chainman);
     }
 
     CheckBlockIndex();

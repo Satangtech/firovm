@@ -20,6 +20,8 @@ inline void initState(){
     globalState = std::unique_ptr<QtumState>(new QtumState(dev::u256(0), QtumState::openDB(dirQtum, hashDB, dev::WithExisting::Trust), dirQtum + "/qtumDB", dev::eth::BaseState::Empty));
 
     globalState->setRootUTXO(dev::sha3(dev::rlp(""))); // temp
+
+    coinList = std::unique_ptr<CoinList>(new CoinList());
 }
 
 inline CBlock generateBlock(){

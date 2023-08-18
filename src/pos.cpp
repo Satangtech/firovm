@@ -280,8 +280,13 @@ bool CheckCoinList(BlockValidationState& state, const Coin &coin, const COutPoin
 
     uint160 address = uint160(ExtractPublicKeyHash(coin.out.scriptPubKey));
 
+    COutPoint root;
+    if (!coinList->GetRoot(prevOut, address, root)) {
+        return error("Fail to get root");
+    }
+
     bool usable;
-    if (!poa.Usable(address, prevOut, usable, chainstate)) {
+    if (!poa.Usable(address, root, usable, chainstate)) {
         return error("Fail to get usable status");
     }
 

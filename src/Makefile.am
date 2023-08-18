@@ -137,6 +137,7 @@ BITCOIN_CORE_H = \
   chainparamsseeds.h \
   checkqueue.h \
   clientversion.h \
+  coinlist.h \
   coins.h \
   common/bloom.h \
   compat.h \
@@ -194,7 +195,6 @@ BITCOIN_CORE_H = \
   node/caches.h \
   node/chainstate.h \
   node/coin.h \
-  node/coinlist.h \
   node/coinstats.h \
   node/context.h \
   node/miner.h \
@@ -367,6 +367,7 @@ libbitcoin_node_a_SOURCES = \
   blockfilter.cpp \
   chain.cpp \
   consensus/tx_verify.cpp \
+  coinlist.cpp \
   dbwrapper.cpp \
   deploymentstatus.cpp \
   flatfile.cpp \
@@ -385,7 +386,6 @@ libbitcoin_node_a_SOURCES = \
   node/caches.cpp \
   node/chainstate.cpp \
   node/coin.cpp \
-  node/coinlist.cpp \
   node/coinstats.cpp \
   node/context.cpp \
   node/interfaces.cpp \

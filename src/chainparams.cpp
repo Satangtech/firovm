@@ -42,7 +42,7 @@ static CBlock CreateGenesisBlock(const char* pszTimestamp, const CScript& genesi
     genesis.vtx.push_back(MakeTransactionRef(std::move(txNew)));
     genesis.hashPrevBlock.SetNull();
     genesis.hashMerkleRoot = BlockMerkleRoot(genesis);
-    genesis.hashStateRoot = uint256(h256Touint(dev::h256("0xe803e5170af345196b30acef3d1a7b53d569d2d39227573ce7eb86f2f2f17b60"))); // qtum
+    genesis.hashStateRoot = uint256(h256Touint(dev::h256("0xd0966b011850e27a9e9f8ab888af7f3cb31e876ea0b826b8126f29499882a509"))); // qtum
     genesis.hashUTXORoot = uint256(h256Touint(dev::sha3(dev::rlp("")))); // qtum
     return genesis;
 }
@@ -175,10 +175,10 @@ public:
         m_assumed_blockchain_size = 18;
         m_assumed_chain_state_size = 1;
 
-        genesis = CreateGenesisBlock(1504695029, 536431, 0x1f00ffff, 1, 50 * COIN);
+        genesis = CreateGenesisBlock(1504695029, 536390, 0x1f00ffff, 1, 50 * COIN);
         consensus.hashGenesisBlock = genesis.GetHash();
 
-        assert(consensus.hashGenesisBlock == uint256S("0x0000e53fa5511b511bf49d1f260e2602bc007dee41805e7ec86918697b99d460"));
+        assert(consensus.hashGenesisBlock == uint256S("0x0000f4a647de75f18519d89c176f6298194f98d4a8f5e16a4e399ec110e68352"));
         assert(genesis.hashMerkleRoot == uint256S("0xed34050eb5909ee535fcb07af292ea55f3d2f291187617b44d3282231405b96d"));
 
         // Note that of those which support the service bits prefix, most only support a subset of
@@ -215,7 +215,7 @@ public:
 
         checkpointData = {
             {
-                { 0, uint256S("0x0000e53fa5511b511bf49d1f260e2602bc007dee41805e7ec86918697b99d460")},
+                { 0, uint256S("0x0000f4a647de75f18519d89c176f6298194f98d4a8f5e16a4e399ec110e68352")},
             }
         };
 
@@ -233,10 +233,10 @@ public:
 
         consensus.nBlocktimeDownscaleFactor = 4;
         consensus.nCoinbaseMaturity = 500;
-        consensus.nRBTCoinbaseMaturity = consensus.nBlocktimeDownscaleFactor*500;
+        consensus.nRBTCoinbaseMaturity = consensus.nBlocktimeDownscaleFactor*250;
         consensus.nSubsidyHalvingIntervalV2 = consensus.nBlocktimeDownscaleFactor*985500; // qtum halving every 4 years (nSubsidyHalvingInterval * nBlocktimeDownscaleFactor)
 
-        consensus.nLastPOWBlock = 40320;
+        consensus.nLastPOWBlock = 2500;
         consensus.nLastBigReward = 5000;
         consensus.nMPoSRewardRecipients = 10;
         consensus.nFirstMPoSBlock = consensus.nLastPOWBlock + 
@@ -323,10 +323,10 @@ public:
         m_assumed_blockchain_size = 8;
         m_assumed_chain_state_size = 1;
 
-        genesis = CreateGenesisBlock(1504695029, 598699, 0x1f00ffff, 1, 50 * COIN);
+        genesis = CreateGenesisBlock(1504695029, 501092, 0x1f00ffff, 1, 50 * COIN);
         consensus.hashGenesisBlock = genesis.GetHash();
 
-        assert(consensus.hashGenesisBlock == uint256S("0x00003e3220820b8eedb1112041ab33740ce0cb713ef95b308723434d948b77ee"));
+        assert(consensus.hashGenesisBlock == uint256S("0x00003fe3f9ed0f4b3a3f405b628bbe244ad96517e2fa05c86e288d8390da7c45"));
         assert(genesis.hashMerkleRoot == uint256S("0xed34050eb5909ee535fcb07af292ea55f3d2f291187617b44d3282231405b96d"));
 
         vFixedSeeds.clear();
@@ -361,7 +361,7 @@ public:
 
         checkpointData = {
             {
-                {0, uint256S("0x00003e3220820b8eedb1112041ab33740ce0cb713ef95b308723434d948b77ee")},
+                {0, uint256S("0x00003fe3f9ed0f4b3a3f405b628bbe244ad96517e2fa05c86e288d8390da7c45")},
             }
         };
 
@@ -378,10 +378,10 @@ public:
 
         consensus.nBlocktimeDownscaleFactor = 4;
         consensus.nCoinbaseMaturity = 500;
-        consensus.nRBTCoinbaseMaturity = consensus.nBlocktimeDownscaleFactor*500;
+        consensus.nRBTCoinbaseMaturity = consensus.nBlocktimeDownscaleFactor*250;
         consensus.nSubsidyHalvingIntervalV2 = consensus.nBlocktimeDownscaleFactor*985500; // qtum halving every 4 years (nSubsidyHalvingInterval * nBlocktimeDownscaleFactor)
 
-        consensus.nLastPOWBlock = 40320;
+        consensus.nLastPOWBlock = 2500;
         consensus.nLastBigReward = 2000;
         consensus.nMPoSRewardRecipients = 10;
         consensus.nFirstMPoSBlock = consensus.nLastPOWBlock + 
@@ -501,10 +501,10 @@ public:
         nDefaultPort = 33888;
         nPruneAfterHeight = 1000;
 
-        genesis = CreateGenesisBlock(1623662135, 504980, 0x1f00ffff, 1, 50 * COIN);
+        genesis = CreateGenesisBlock(1623662135, 666198, 0x1f00ffff, 1, 50 * COIN);
         consensus.hashGenesisBlock = genesis.GetHash();
 
-        assert(consensus.hashGenesisBlock == uint256S("0x0000cc2a3460129905ca415835f1d94dc1c2aefebccb2c3145594ee5d6899217"));
+        assert(consensus.hashGenesisBlock == uint256S("0x0000a1c2be1d45625baa73f55de7c4fb79596a83d47d2e7283cff8de2d325d28"));
         assert(genesis.hashMerkleRoot == uint256S("0xed34050eb5909ee535fcb07af292ea55f3d2f291187617b44d3282231405b96d"));
 
         vFixedSeeds.clear();
@@ -525,7 +525,7 @@ public:
 
         consensus.nBlocktimeDownscaleFactor = 4;
         consensus.nCoinbaseMaturity = 500;
-        consensus.nRBTCoinbaseMaturity = consensus.nBlocktimeDownscaleFactor*500;
+        consensus.nRBTCoinbaseMaturity = consensus.nBlocktimeDownscaleFactor*250;
         consensus.nSubsidyHalvingIntervalV2 = consensus.nBlocktimeDownscaleFactor*985500; // qtum halving every 4 years (nSubsidyHalvingInterval * nBlocktimeDownscaleFactor)
 
         consensus.nLastPOWBlock = 0x7fffffff;
@@ -613,10 +613,10 @@ public:
 
         UpdateActivationParametersFromArgs(args);
 
-        genesis = CreateGenesisBlock(1504695029, 500001, 0x207fffff, 1, 50 * COIN);
+        genesis = CreateGenesisBlock(1504695029, 500000, 0x207fffff, 1, 50 * COIN);
         consensus.hashGenesisBlock = genesis.GetHash();
 
-        assert(consensus.hashGenesisBlock == uint256S("0x295ee773db7dd0e33b5258b4115f69534b069d05f2007bb4f222b2d3ef5d57b8"));
+        assert(consensus.hashGenesisBlock == uint256S("0x74454b7eabac5126a49016eda419e5baa931fb6c3d7c1b8b8eece6254d806563"));
         assert(genesis.hashMerkleRoot == uint256S("0xed34050eb5909ee535fcb07af292ea55f3d2f291187617b44d3282231405b96d"));
 
         vFixedSeeds.clear(); //!< Regtest mode doesn't have any fixed seeds.
@@ -632,7 +632,7 @@ public:
 
         checkpointData = {
             {
-                {0, uint256S("0x295ee773db7dd0e33b5258b4115f69534b069d05f2007bb4f222b2d3ef5d57b8")},
+                {0, uint256S("0x74454b7eabac5126a49016eda419e5baa931fb6c3d7c1b8b8eece6254d806563")},
             }
         };
 
@@ -648,7 +648,7 @@ public:
 
         consensus.nBlocktimeDownscaleFactor = 4;
         consensus.nCoinbaseMaturity = 500;
-        consensus.nRBTCoinbaseMaturity = consensus.nBlocktimeDownscaleFactor*500;
+        consensus.nRBTCoinbaseMaturity = consensus.nBlocktimeDownscaleFactor*250;
         consensus.nSubsidyHalvingIntervalV2 = consensus.nBlocktimeDownscaleFactor*985500; // qtum halving every 4 years (nSubsidyHalvingInterval * nBlocktimeDownscaleFactor)
 
         consensus.nLastPOWBlock = 0x7fffffff;
@@ -769,9 +769,9 @@ public:
         consensus.BIP16Exception = uint256();
         consensus.BIP34Height = 100000000; // BIP34 has not activated on regtest (far in the future so block v1 are not rejected in tests)
         consensus.BIP34Hash = uint256();
-        consensus.BIP65Height = consensus.nBlocktimeDownscaleFactor*500 + 851; // BIP65 activated on regtest (Used in rpc activation tests)
-        consensus.BIP66Height = consensus.nBlocktimeDownscaleFactor*500 + 751; // BIP66 activated on regtest (Used in rpc activation tests)
-        consensus.QIP6Height = consensus.nBlocktimeDownscaleFactor*500 + 500;
+        consensus.BIP65Height = consensus.nBlocktimeDownscaleFactor*250 + 851; // BIP65 activated on regtest (Used in rpc activation tests)
+        consensus.BIP66Height = consensus.nBlocktimeDownscaleFactor*250 + 751; // BIP66 activated on regtest (Used in rpc activation tests)
+        consensus.QIP6Height = consensus.nBlocktimeDownscaleFactor*250 + 500;
         consensus.QIP7Height = 0; // QIP7 activated on regtest
 
         // QTUM have 500 blocks of maturity, increased values for regtest in unit tests in order to correspond with it
@@ -782,7 +782,7 @@ public:
 
         consensus.nBlocktimeDownscaleFactor = 4;
         consensus.nCoinbaseMaturity = 500;
-        consensus.nRBTCoinbaseMaturity = consensus.nBlocktimeDownscaleFactor*500;
+        consensus.nRBTCoinbaseMaturity = consensus.nBlocktimeDownscaleFactor*250;
 
         consensus.nCheckpointSpan = consensus.nCoinbaseMaturity*2; // Increase the check point span for the reorganization tests from 500 to 1000
         consensus.nRBTCheckpointSpan = consensus.nRBTCoinbaseMaturity*2; // Increase the check point span for the reorganization tests from 500 to 1000
@@ -901,7 +901,7 @@ void CChainParams::UpdateDifficultyChangeBlockHeight(int nHeight)
     consensus.fPowAllowMinDifficultyBlocks = false;
     consensus.fPowNoRetargeting = true;
     consensus.fPoSNoRetargeting = false;
-    consensus.nLastPOWBlock = 40320;
+    consensus.nLastPOWBlock = 2500;
     consensus.nMPoSRewardRecipients = 10;
     consensus.nFirstMPoSBlock = consensus.nLastPOWBlock + 
                                 consensus.nMPoSRewardRecipients + 
