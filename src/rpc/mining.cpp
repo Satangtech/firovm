@@ -1255,6 +1255,84 @@ static RPCHelpMan estimaterawfee()
     };
 }
 
+static RPCHelpMan getminerinfo()
+{
+    return RPCHelpMan{"getminerinfo",
+                "\nReturns info of miner list.",
+                {
+                    {"include_utxos", RPCArg::Type::BOOL, RPCArg::Default{false}, "True to return utxos info of each address."},
+                },
+                RPCResult{
+                    RPCResult::Type::ARR, "addresses", "",
+                    {
+                        {RPCResult::Type::OBJ, "", "",
+                        {
+                            {RPCResult::Type::STR, "address", "Miner address"},
+                            {RPCResult::Type::NUM, "utxos", "Number of UTXOs holded by miner"},
+                            {RPCResult::Type::ARR, "info", /*optional=*/true, "UTXO info if include_utxos = True",
+                            {
+                                {RPCResult::Type::OBJ, "", "",
+                                {
+                                    {RPCResult::Type::STR, "txid", "The transaction id"},
+                                    {RPCResult::Type::NUM, "vout", "The output number"},
+                                }},
+                            }
+                            },
+                        }},
+                    },
+                },
+                RPCExamples{
+                    HelpExampleCli("getminerinfo", "")
+                    + HelpExampleRpc("getminerinfo", "")
+                    + "\nGet miner info with utxos data\n"
+                    + HelpExampleCli("getminerinfo", "true")
+                    + HelpExampleRpc("getminerinfo", "true")
+                },
+        [&](const RPCHelpMan& self, const JSONRPCRequest& request) -> UniValue
+{
+    auto includeUtxos = false;
+    if (!request.params[0].isNull())
+        includeUtxos = request.params[0].get_bool();
+
+    LOCK(cs_main);
+    const auto utxoMap = coinList->getUtxoMap();
+
+    std::unordered_map<std::string, std::vector<COutPoint>> miners; 
+
+    for (auto it = utxoMap.begin(); it != utxoMap.end(); it++) {
+        auto hexAddr = it->second.second.GetReverseHex();
+        CKeyID id;
+        id.SetReverseHex(hexAddr);
+        PKHash raw(id);
+        CTxDestination dest(raw);
+        auto addr = EncodeDestination(dest);
+        miners[addr].push_back(it->first);
+    }
+
+    UniValue res(UniValue::VARR);
+    for (auto it = miners.begin(); it != miners.end(); it++) {
+        UniValue address(UniValue::VOBJ);
+        address.pushKV("address", it->first);
+        address.pushKV("utxos", it->second.size());
+        if (includeUtxos) {
+            UniValue utxos(UniValue::VARR);
+            for (const auto &u : it->second) {
+                UniValue utxo(UniValue::VOBJ);
+                utxo.pushKV("txid", u.hash.GetHex());
+                utxo.pushKV("vout", (int64_t)u.n);
+                utxos.push_back(utxo);
+            }
+            address.pushKV("info", utxos);
+        }
+        res.push_back(address);
+    }
+
+    return res;
+},
+    };
+}
+
+
 void RegisterMiningRPCCommands(CRPCTable &t)
 {
 // clang-format off
@@ -1268,6 +1346,8 @@ static const CRPCCommand commands[] =
     { "mining",              &submitheader,            },
 
     { "mining",              &getsubsidy,              },
+
+    { "mining",              &getminerinfo             },
 
     { "hidden",              &generatetoaddress,       },
     { "hidden",              &generatetodescriptor,    },
