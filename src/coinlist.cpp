@@ -58,3 +58,7 @@ bool CoinList::GetRoot(const COutPoint& child, COutPoint &root) {
     root = rootItr->second.first;
     return true;
 }
+
+const std::unordered_map<COutPoint, std::pair<COutPoint, uint160>, COutPointHasher>& CoinList::getUtxoMap() const {
+    return utxoMap;
+}
