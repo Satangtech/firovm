@@ -5,7 +5,8 @@
 #include <util/contractabi.h>
 
 extern const std::string supplyControlABI;
-extern const std::string supplyControlCode;
+extern const std::string mainnetSupplyControlCode;
+extern const std::string testnetSupplyControlCode;
 
 struct Mint {
     std::string scriptType;
