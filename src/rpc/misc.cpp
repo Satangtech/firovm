@@ -422,28 +422,13 @@ RPCHelpMan getaddressbalance()
         if (it->second > 0) {
             received += it->second;
         }
+        balance += it->second;
         int nHeight = active_chain.Height();
-        int lastPOWBlock =  Params().GetConsensus().nLastPOWBlock;
-
-        if (  it->first.blockHeight <= lastPOWBlock){
-            // POW DO
-            if (it->first.txindex == 0 ){
-                if(  ((nHeight - it->first.blockHeight) < Params().GetConsensus().CoinbaseMaturity(nHeight)) ){
-                     immature += it->second; //immature block reward outputs
-                } else {
-                     balance += it->second;
-                }
-             }
-        }else {
-            // POS DO
-            if (it->first.txindex == 1 ){
-                if(  ((nHeight - it->first.blockHeight) < Params().GetConsensus().CoinbaseMaturity(nHeight)) ){
-                     immature += it->second; //immature stake outputs
-                } else {
-                     balance += it->second;
-                }
-             }
-
+        if ((nHeight - it->first.blockHeight) < Params().GetConsensus().CoinbaseMaturity(nHeight)) {
+            int coinbaseOrCoinStakeTxIndex = it->first.blockHeight <= Params().GetConsensus().nLastPOWBlock &&
+                active_chain[it->first.blockHeight]->IsProofOfWork() ? 0 : 1;
+            if (it->first.txindex == coinbaseOrCoinStakeTxIndex)
+                immature += it->second; // immature stake or coinbase outputs
         }
     }
 
