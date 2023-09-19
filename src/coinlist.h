@@ -9,10 +9,8 @@ class CoinList
 {
 private:
     FVMPoA fvmMinerList;
-
-    std::unordered_map<COutPoint, std::pair<COutPoint, uint160>, COutPointHasher> utxoMap;
-
-    int height = 0;
+    UTXOMap utxoMap;
+    int height = -1;
 
 public:
     CoinList();

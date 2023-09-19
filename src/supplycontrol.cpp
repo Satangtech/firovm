@@ -17,7 +17,7 @@ bool AddSupplyControlOutputs(int nHeight, CMutableTransaction &tx, CChainState &
 }
 
 CAmount GetSupplyControlOutputs(int nHeight, std::vector<CTxOut> &outputs, CChainState &state) {
-    CAmount val;
+    CAmount val = 0;
 
     FVMSupplyControl c;
     std::vector<Mint> mints;

@@ -17,7 +17,7 @@ void CoinList::Update(ChainstateManager& chainman)
     }
     int cur = chainman.ActiveHeight();
 
-    LogPrintf("Update(): updateing utxoMap=%d, height=%d, cur=%d\n", utxoMap.size(), height, cur);
+    LogPrintf("Update(): updating utxoMap=%d, height=%d, cur=%d\n", utxoMap.size(), height, cur);
 
     for (int _height = height + 1; _height <= cur; _height++) {
         fvmMinerList.UpdateUTXOMapFromBlocks(utxoMap, chainman, _height, _height);
@@ -31,31 +31,26 @@ void CoinList::Update(ChainstateManager& chainman)
 }
 
 bool CoinList::GetRoot(const COutPoint& child, const uint160 &address, COutPoint &root) {
-    auto mapItr = utxoMap.find(child);
-
-    auto rootItr = utxoMap.find(child);
-    if (rootItr == utxoMap.end()) {
+    auto itr = utxoMap.find(child);
+    if (itr == utxoMap.end()) {
         return false;
     }
 
-    if (rootItr->second.second != address) {
+    if (itr->second.second != address) {
         return false;
     }
 
-    root = rootItr->second.first;
+    root = itr->second.first;
     return true;
 }
 
 bool CoinList::GetRoot(const COutPoint& child, COutPoint &root) {
-    auto mapItr = utxoMap.find(child);
-
-    // if not found in map then it should be root it safe
-    auto rootItr = utxoMap.find(child);
-    if (rootItr == utxoMap.end()) {
+    auto itr = utxoMap.find(child);
+    if (itr == utxoMap.end()) {
         return false;
     }
 
-    root = rootItr->second.first;
+    root = itr->second.first;
     return true;
 }
 
