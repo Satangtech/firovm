@@ -120,6 +120,8 @@ BasicTestingSetup::BasicTestingSetup(const std::string& chainName, const std::ve
     }
     m_args.SoftSetBoolArg("-staking", false);
     gArgs.SoftSetBoolArg("-staking", false);
+    m_args.SoftSetBoolArg("-logevents", true);
+    gArgs.SoftSetBoolArg("-logevents", true);
     SelectParams(chainName);
     SeedInsecureRand();
     if (G_TEST_LOG_FUN) LogInstance().PushBackCallback(G_TEST_LOG_FUN);
@@ -286,7 +288,7 @@ TestChain100Setup::TestChain100Setup(const std::vector<const char*>& extra_args)
         LOCK(::cs_main);
         assert(
             m_node.chainman->ActiveChain().Tip()->GetBlockHash().ToString() ==
-            "7c64fe6137e95c82cfcf3f490f5c355d6365ee2f102d8c135d57854323fd89a8");
+            "426ecba06f0b8d46b41fafce4f755bc6c891591b371b096a952c4190c74e5394");
     }
 }
 
