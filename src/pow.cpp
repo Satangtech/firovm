@@ -131,7 +131,7 @@ unsigned int CalculateNextWorkRequired(const CBlockIndex* pindexLast, int64_t nF
         if (nActualSpacing > nTargetSpacing * 20)
             nActualSpacing = nTargetSpacing * 20;
         uint32_t stakeTimestampMask=params.StakeTimestampMask(nHeight);
-        bnNew = mul_exp(bnNew, 2 * (nActualSpacing - nTargetSpacing) / (stakeTimestampMask + 1), (nInterval + 1) * nTargetSpacing / (stakeTimestampMask + 1));
+        bnNew = mul_exp(bnNew, 2 * (nActualSpacing - nTargetSpacing) / (stakeTimestampMask), (nInterval + 1) * nTargetSpacing / (stakeTimestampMask));
     }
 
     if (bnNew <= 0 || bnNew > bnTargetLimit)

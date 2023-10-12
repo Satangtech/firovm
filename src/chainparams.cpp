@@ -397,7 +397,7 @@ public:
         consensus.supplyControlAddress = uint160(ParseHex("0000000000000000000000000000000000000882"));
         consensus.minerListAddress = uint160(ParseHex("0000000000000000000000000000000000000880"));
         consensus.nStakeTimestampMask = 15;
-        consensus.nRBTStakeTimestampMask = 3;
+        consensus.nRBTStakeTimestampMask = 15;
     }
 };
 

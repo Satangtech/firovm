@@ -223,7 +223,7 @@ std::unique_ptr<CBlockTemplate> BlockAssembler::CreateNewBlock(const CScript& sc
         txProofTime = GetAdjustedTime();
     }
     if(fProofOfStake)
-        txProofTime &= ~chainparams.GetConsensus().StakeTimestampMask(nHeight);
+        txProofTime -= txProofTime % chainparams.GetConsensus().StakeTimestampMask(nHeight);
     pblock->nTime = txProofTime;
     if (!fProofOfStake)
         UpdateTime(pblock, chainparams.GetConsensus(), pindexPrev);
@@ -387,7 +387,7 @@ std::unique_ptr<CBlockTemplate> BlockAssembler::CreateEmptyBlock(const CScript& 
 
     uint32_t txProofTime = nTime == 0 ? GetAdjustedTime() : nTime;
     if(fProofOfStake)
-        txProofTime &= ~chainparams.GetConsensus().StakeTimestampMask(nHeight);
+        txProofTime -= txProofTime % chainparams.GetConsensus().StakeTimestampMask(nHeight);
     pblock->nTime = txProofTime;
 
     m_lock_time_cutoff = pindexPrev->GetMedianTimePast();
@@ -1413,7 +1413,7 @@ bool SignBlock(std::shared_ptr<CBlock> pblock, wallet::CWallet& wallet, const CA
     LOCK(wallet.cs_wallet);
     uint32_t nHeight = wallet.chain().getHeight().value_or(0) + 1;
     const Consensus::Params& consensusParams = Params().GetConsensus();
-    nTimeBlock &= ~consensusParams.StakeTimestampMask(nHeight);
+    nTimeBlock -= nTimeBlock % consensusParams.StakeTimestampMask(nHeight);
     bool privateKeysDisabled = wallet.IsWalletFlagSet(wallet::WALLET_FLAG_DISABLE_PRIVATE_KEYS);
     bool found = false;
     {
@@ -1643,10 +1643,10 @@ public:
             {
                 // Look for possibility to create a block
                 d->beginningTime = GetAdjustedTime();
-                d->beginningTime &= ~d->stakeTimestampMask;
+                d->beginningTime -= d->beginningTime % d->stakeTimestampMask;
                 d->endingTime = d->beginningTime + nMaxStakeLookahead;
 
-                for(uint32_t blockTime = d->beginningTime; blockTime < d->endingTime; blockTime += d->stakeTimestampMask+1)
+                for(uint32_t blockTime = d->beginningTime; blockTime < d->endingTime; blockTime += d->stakeTimestampMask)
                 {
                     // Update status bar
                     UpdateStatusBar(blockTime);
@@ -1715,6 +1715,7 @@ protected:
         // Wait for node connections
         // Don't disable PoS mining for no connections if in regtest mode
         if(!d->minDifficulty && !d->fEmergencyStaking) {
+            /*
             while (d->pwallet->chain().getNodeCount(ConnectionDirection::Both) == 0 || d->pwallet->chain().isInitialBlockDownload()) {
                 d->pwallet->m_last_coin_stake_search_interval = 0;
                 d->fTryToSync = true;
@@ -1729,11 +1730,12 @@ protected:
                     return false;
                 }
             }
+            */
         }
 
         // Check if cached data is old
         uint32_t blokTime = GetAdjustedTime();
-        blokTime &= ~d->stakeTimestampMask;
+        blokTime -= blokTime % d->stakeTimestampMask;
         if(!IsCachedDataOld() && d->endingTime >= blokTime)
         {
             Sleep(100);
@@ -1875,7 +1877,7 @@ protected:
         }
 
         d->beginningTime = GetAdjustedTime();
-        d->beginningTime &= ~d->stakeTimestampMask;
+        d->beginningTime -= d->beginningTime % d->stakeTimestampMask;
         d->endingTime = d->beginningTime + nMaxStakeLookahead;
 
         return true;

@@ -174,7 +174,7 @@ double GetPoSKernelPS()
     if (nStakesTime)
         result = dStakeKernelsTriedAvg / nStakesTime;
     
-    result *= stakeTimestampMask + 1;
+    result *= stakeTimestampMask;
 
     return result;
 }
